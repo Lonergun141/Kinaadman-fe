@@ -1,5 +1,3 @@
-create a system archtecture out of this idea in mermaid
-
 # Kinaadman (MVP) — Campus-Only Multi-Tenant Thesis Repository
 
 Kinaadman is a multi-tenant SaaS platform for universities to **store, manage, and access thesis/capstone research** in a **private (campus-only)** digital repository. Each university is a **tenant** with isolated data, users, and settings.
