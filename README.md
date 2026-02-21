@@ -1,61 +1,49 @@
-# Kinaadman (MVP) — Campus-Only Multi-Tenant Thesis Repository
+# Kinaadman (MVP)
+Campus-only, multi-tenant thesis/capstone repository for universities. Each university (tenant) has isolated data, users, roles, and policies—**no public pages**.
 
-Kinaadman is a multi-tenant SaaS platform for universities to **store, manage, and access thesis/capstone research** in a **private (campus-only)** digital repository. Each university is a **tenant** with isolated data, users, and settings.
+## MVP Scope
+- Multi-tenant (single platform, tenant-scoped data via `tenant_id`)
+- Private repository workflow: **DRAFT → SUBMITTED → REVIEW → APPROVED → PUBLISHED** (still private)
+- Thesis records: metadata + PDF + attachments
+- Search & filters (Postgres FTS + structured filters)
+- RBAC: Student, Adviser, Librarian, Tenant Admin, Super Admin
+- Secure file access via **pre-signed URLs** (upload/download)
 
----
+## Tenancy & Campus-Only Rules (per diagrams)
+- Single app entry: `app.kinaadman.com` (white-label per tenant)
+- Tenant context resolution supports:
+  - email-domain mapping
+  - tenant picker
+  - `/t/{tenant_slug}` (optional UI route)
+  - host aliases (optional/custom mapping)
+- “Campus-only” enforced by tenant policy (MVP):
+  - login required for everything
+  - invite-only + allowed email domains
+  - optional email OTP + lockout rules
 
-## What the MVP does
-- **Tenant-based system** (multiple universities on one platform)
-- **Campus-only access**: everything requires login (no public pages)
-- **Research workflow**: Draft → Submitted → Review → Approved → Published (still private)
-- **Thesis metadata + file uploads** (PDF + attachments)
-- **Search + filters** (title, abstract, keywords, year, department, program, authors/advisers)
-- **Roles (RBAC)**: Student, Adviser, Librarian, Tenant Admin, Super Admin
+## Core API Flows (high level)
+- Bootstrap tenant context: `GET /v1/bootstrap`
+- Auth: `POST /v1/auth/login` → (optional) `POST /v1/auth/otp/verify`
+- Token lifecycle: `POST /v1/auth/refresh`, `POST /v1/auth/logout`
+- Theses: `GET /v1/theses`, `GET /v1/theses/{id}`, `POST /v1/theses/{id}/submit`
+- Files: `POST /v1/files/presign-upload` → `POST /v1/files/complete`
+  - Downloads: `POST /v1/files/presign-download`
 
----
+## Tech Stack (MVP)
+- **Frontend:** Next.js (TypeScript, App Router) + Tailwind + shadcn/ui
+- **Backend:** Django + Django Ninja (REST API) + Django Admin (backoffice)
+- **DB:** PostgreSQL (single DB; all rows scoped by `tenant_id`)
+- **Storage:** S3-compatible (AWS S3 / DigitalOcean Spaces) via pre-signed URLs
+- **Optional later:** Redis + Celery (thumbnails, extraction, async jobs)
 
-## Suggested Tech Stack (fast MVP, scalable later)
-**Frontend**
-- Next.js (TypeScript, App Router)
-- Tailwind + shadcn/ui
-
-**Backend**
-- Django + Django Ninja (REST API)
-- Django Admin for backoffice ops
-
-**Data**
-- PostgreSQL (single DB; tenant scoping via `tenant_id`)
-
-**Files**
-- S3-compatible storage (AWS S3 / DigitalOcean Spaces)
-- Pre-signed URLs for secure uploads/downloads
-
-**Caching/Jobs (optional MVP, recommended later)**
-- Redis (sessions/cache)
-- Celery (PDF thumbnails, extraction, async tasks)
-
----
-
-## Tenancy & Access (MVP rules)
-- Tenant resolved via **subdomain**: `{tenant}.kinaadman.com`
-- Every tenant-owned record includes `tenant_id`
-- **Campus-only** enforced by:
-  - Invite-only accounts + allowed email domains (MVP), then
-  - Optional upgrade to tenant SSO (OIDC/SAML)
-
----
-
-## High-level Modules
-- **Auth & Users**: login, roles, invitations, tenant membership
-- **Thesis Records**: metadata, status workflow, approvals
-- **Files**: upload/download with permission checks
-- **Repository Search**: Postgres full-text search (upgrade later if needed)
-- **Admin Tools**: user management, review queue, tenant settings
-
----
+## Diagrams (Mermaid source)
+- System Architecture: `docs/diagrams/Kinaadman-system-architecture.mmd`
+- Sequence Diagram: `docs/diagrams/Kinaadman-sequence-diagram.mmd`
+- Use Case Diagram: `docs/diagrams/Kinaadman-usecase-diagram.mmd`
+- ERD: `docs/diagrams/Kinaadman-erd.mmd`
 
 ## Scaling Path (no rewrite)
 - Stronger isolation: Postgres RLS or schema-per-tenant
 - Better search: OpenSearch/Elasticsearch
-- Enterprise access: SSO + optional IP allowlisting
-- Performance: Redis caching + CDN for files
+- Enterprise access: OIDC/SAML SSO + IP allowlisting
+- Performance: Redis caching + CDN for file delivery
