@@ -1,0 +1,16 @@
+export {
+  assignAdviser,
+  assignAuthor,
+  createDepartment,
+  createProgram,
+  createThesis,
+  getThesis,
+  listDepartments,
+  listPrograms,
+  listTheses,
+  publishThesis,
+  reviewThesis,
+  submitThesis,
+  unpublishThesis,
+  updateThesis,
+} from "./api/index";
