@@ -172,7 +172,9 @@ export async function requestJson<T>(
     "";
   const headers = new Headers(options.headers);
 
-  headers.set("Content-Type", "application/json");
+  if (options.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (tenantId) {
     headers.set("X-Tenant-ID", tenantId);

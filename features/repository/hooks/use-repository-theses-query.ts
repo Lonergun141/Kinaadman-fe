@@ -8,18 +8,21 @@ export function useRepositoryThesesQuery(payload: {
   tenantId: string;
   search: string;
   status: string;
+  authorUserId?: string;
 }) {
   return useQuery({
     queryKey: queryKeys.repository.theses(
       payload.tenantId,
       payload.search,
       payload.status,
+      payload.authorUserId,
     ),
     queryFn: () =>
       listTheses({
         tenantId: payload.tenantId,
         search: payload.search,
         status: payload.status,
+        authorUserId: payload.authorUserId,
       }),
     enabled: Boolean(payload.tenantId),
   });

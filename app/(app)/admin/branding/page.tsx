@@ -44,22 +44,28 @@ export default function AdminBrandingPage() {
   }
 
   return (
-    <div className="page-shell space-y-6">
+    <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Tenant administration"
         title="White-label branding studio"
-        description="Manage the repository masthead and theme tokens for the active tenant."
+        description="Shape the tenant masthead, primary palette, and overall first impression so the archive feels institutional and deliberate."
       />
 
       <section className="grid gap-5 xl:grid-cols-2">
         <SurfaceCard eyebrow="Live preview" title="Repository masthead preview">
           <div
-            className="rounded-xl p-6 text-white"
-            style={{ backgroundColor: primaryColor }}
+            className="rounded-[0.5rem] p-6 text-white"
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 100%)`,
+            }}
           >
-            <p className="muted-label text-white/70">Active masthead</p>
-            <h3 className="mt-3 text-2xl font-bold text-white">{displayName}</h3>
-            <p className="text-muted mt-2 max-w-lg !text-white/80">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
+              Active masthead
+            </p>
+            <h3 className="mt-3 font-serif text-2xl italic text-white">
+              {displayName}
+            </h3>
+            <p className="mt-2 max-w-lg text-sm leading-7 text-white/80">
               A secure, institution-first repository interface for thesis and
               capstone research.
             </p>
@@ -90,7 +96,7 @@ export default function AdminBrandingPage() {
               />
             </div>
             {brandingMutation.error ? (
-              <div className="rounded-lg bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
+              <div className="rounded-[0.5rem] bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
                 {brandingMutation.error.message}
               </div>
             ) : null}

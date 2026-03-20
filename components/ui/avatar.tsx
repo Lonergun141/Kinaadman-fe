@@ -25,7 +25,7 @@ export function Avatar({ name, size = "md", className }: AvatarProps) {
   return (
     <div
       className={cx(
-        "inline-flex shrink-0 items-center justify-center rounded-full bg-[color:var(--color-primary)] font-semibold text-white",
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-[color:var(--color-primary)] font-semibold text-white shadow-[0_14px_24px_rgba(0,21,42,0.18)]",
         sizeClasses[size],
         className,
       )}

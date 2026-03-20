@@ -6,8 +6,8 @@ interface EmptyStateProps {
 
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="paper-panel flex flex-col items-center justify-center px-6 py-12 text-center">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(15,42,68,0.06)]">
+    <div className="paper-panel flex flex-col items-center justify-center px-6 py-12 text-center sm:px-8">
+      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(15,42,68,0.06)] shadow-[inset_0_0_0_1px_rgba(15,42,68,0.08)]">
         <svg
           className="h-5 w-5 text-[color:var(--color-muted)]"
           fill="none"
@@ -22,7 +22,8 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
           />
         </svg>
       </div>
-      <h3 className="font-serif text-[1.45rem] leading-tight text-[color:var(--color-primary)]">
+      <p className="muted-label mb-2">Archive state</p>
+      <h3 className="font-serif text-[1.55rem] leading-tight text-[color:var(--color-primary)] text-balance">
         {title}
       </h3>
       <p className="text-muted mt-2 max-w-sm">{description}</p>

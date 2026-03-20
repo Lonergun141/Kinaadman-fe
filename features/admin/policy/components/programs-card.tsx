@@ -39,7 +39,7 @@ export function ProgramsCard({
         />
       ) : (
         <>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {programs.map((program) => {
               const department = departments.find(
                 (option) => option.id === program.department_id,

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 
 interface BreadcrumbItem {
   label: string;
@@ -7,7 +7,10 @@ interface BreadcrumbItem {
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex flex-wrap items-center gap-2 text-sm text-[color:var(--color-muted)]"
+    >
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
@@ -32,12 +35,13 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
                 {item.label}
               </span>
             ) : (
-              <Link
+              <TransitionLink
                 href={item.href}
-                className="font-medium text-[color:var(--color-muted)] transition-colors hover:text-[color:var(--color-primary)]"
+                className="rounded-full px-2 py-0.5 font-medium transition-colors hover:bg-[rgba(15,42,68,0.05)] hover:text-[color:var(--color-primary)]"
+                pendingClassName="opacity-75"
               >
                 {item.label}
-              </Link>
+              </TransitionLink>
             )}
           </span>
         );

@@ -32,7 +32,7 @@ export function DepartmentsCard({
         />
       ) : (
         <>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {departments.map((department) => (
               <div key={department.id} className="card-item">
                 <p className="text-sm font-semibold text-[color:var(--color-primary)]">
@@ -42,7 +42,7 @@ export function DepartmentsCard({
               </div>
             ))}
           </div>
-          <div className="mt-4 flex gap-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <TextInput
               label="New department"
               value={departmentName}

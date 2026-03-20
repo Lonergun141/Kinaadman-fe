@@ -88,14 +88,14 @@ export function AdminPolicyPageView() {
   };
 
   return (
-    <div className="page-shell space-y-6">
+    <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Tenant administration"
-        title="Tenant settings, policy, and academic structure"
-        description="Manage campus access rules together with the departments and programs that shape repository metadata."
+        title="Tenant policy and academic structure"
+        description="Adjust access posture, security rules, and the academic catalogue that authors use when classifying thesis records."
       />
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Departments"
           value={String(stats.departments)}
@@ -121,7 +121,7 @@ export function AdminPolicyPageView() {
       </section>
 
       {combinedError ? (
-        <div className="rounded-lg bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
+        <div className="rounded-[0.5rem] bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
           {combinedError}
         </div>
       ) : null}

@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { cx } from "@/lib/utils";
+import { useUiStore } from "@/stores/ui-store";
 import type { AppRole } from "@/stores/workspace-store";
 import { navigation, navigationSections } from "./navigation";
 
@@ -16,7 +17,7 @@ function NavIcon({ href, active }: { href: string; active: boolean }) {
     "h-4 w-4 shrink-0 transition-transform duration-200",
     active
       ? "text-[color:var(--color-primary)]"
-      : "text-[color:var(--color-muted)] group-hover:text-[color:var(--color-primary)]",
+      : "text-[color:var(--color-muted-foreground)] group-hover:text-[color:var(--color-primary)]",
   );
 
   if (href === "/repository") {
@@ -68,6 +69,10 @@ export function SidebarNav({
   activeRole,
   onNavigate,
 }: SidebarNavProps) {
+  const navigationPendingHref = useUiStore(
+    (state) => state.navigationPendingHref,
+  );
+
   return (
     <nav className="space-y-6" aria-label="Primary">
       {navigationSections.map((section) => {
@@ -81,30 +86,45 @@ export function SidebarNav({
 
         return (
           <div key={section} className="space-y-1">
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--color-muted)]">
+            <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--color-muted)]">
               {section}
             </p>
             {items.map((item) => {
               const active =
                 pathname === item.href ||
                 (item.href !== "/repository" && pathname.startsWith(item.href));
+              const pending = navigationPendingHref === item.href;
 
               return (
-                <Link
+                <TransitionLink
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  onClick={onNavigate}
+                  onNavigate={onNavigate}
                   className={cx(
-                    "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    "group relative flex items-center gap-3 rounded-[0.5rem] px-3 py-3 text-sm font-medium transition-all duration-200",
                     active
-                      ? "bg-[color:var(--color-surface)] text-[color:var(--color-primary)] shadow-[0_1px_2px_rgba(15,42,68,0.08)]"
-                      : "text-[color:var(--color-muted-foreground)] hover:bg-[color:var(--color-surface)] hover:text-[color:var(--color-primary)]",
+                      ? "bg-[color:var(--color-surface)] text-[color:var(--color-primary)] shadow-sm border border-[color:var(--color-border)]"
+                      : "text-[color:var(--color-muted-foreground)] hover:bg-[color:var(--color-surface-high)] hover:text-[color:var(--color-primary)] border border-transparent",
+                    pending ? "bg-[color:var(--color-surface-low)] text-[color:var(--color-primary)]" : undefined,
                   )}
+                  pendingClassName="bg-[color:var(--color-surface-low)] text-[color:var(--color-primary)]"
                 >
                   <NavIcon href={item.href} active={active} />
-                  {item.label}
-                </Link>
+                  <span>{item.label}</span>
+                  {pending ? (
+                    <span
+                      aria-hidden="true"
+                      className="ml-auto h-1.5 w-1.5 animate-pulse rounded-full bg-[color:var(--color-secondary)]"
+                    />
+                  ) : null}
+                  {active ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-[color:var(--color-secondary)]"
+                    />
+                  ) : null}
+                </TransitionLink>
               );
             })}
           </div>

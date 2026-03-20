@@ -1,16 +1,16 @@
-import Link from "next/link";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { formatDate } from "@/lib/utils";
 import type { ThesisListItem } from "@/types/domain";
 
 export function ThesisTable({ items }: { items: ThesisListItem[] }) {
   return (
-    <div className="hidden overflow-hidden rounded-xl shadow-[0_20px_40px_rgba(0,21,42,0.05)] lg:block">
+    <div className="table-shell hidden lg:block">
       <table className="min-w-full">
         <thead className="knowledge-gradient text-left text-[11px] uppercase tracking-[0.16em] text-white">
           <tr>
             <th className="px-5 py-4">Title</th>
-            <th className="px-5 py-4">Authors</th>
+            <th className="px-5 py-4">Reading note</th>
             <th className="px-5 py-4">Department</th>
             <th className="px-5 py-4">Year</th>
             <th className="px-5 py-4">Status</th>
@@ -28,17 +28,20 @@ export function ThesisTable({ items }: { items: ThesisListItem[] }) {
               }
             >
               <td className="px-5 py-5 align-top">
-                <Link
+                <TransitionLink
                   href={`/theses/${item.id}`}
                   className="font-serif text-[1.08rem] font-medium leading-snug text-[color:var(--color-primary)] transition-colors hover:text-[color:var(--color-secondary)]"
+                  pendingClassName="opacity-80"
                 >
                   {item.title}
-                </Link>
+                </TransitionLink>
                 <p className="text-muted mt-1 text-xs italic">
                   {item.program?.name || "Unassigned program"}
                 </p>
               </td>
-              <td className="text-muted px-5 py-5 align-top">See detail view</td>
+              <td className="text-muted px-5 py-5 align-top">
+                Open the detail view for contributors and full citation context.
+              </td>
               <td className="text-muted px-5 py-5 align-top">
                 {item.department?.name || "Unassigned department"}
               </td>

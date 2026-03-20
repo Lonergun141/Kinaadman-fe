@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { TabPanels } from "@/components/ui/tab-panels";
 import { sendInvitation } from "@/features/admin/api";
 import { useTenantMembershipsQuery } from "@/features/admin/hooks/use-tenant-memberships-query";
 import { useWorkspaceStore, type AppRole } from "@/stores/workspace-store";
@@ -19,12 +22,14 @@ export function AdminUsersPageView() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AppRole>("STUDENT");
   const [sentInvites, setSentInvites] = useState<SessionInvite[]>([]);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const inviteMutation = useMutation({
     mutationFn: sendInvitation,
     onSuccess: (invite) => {
       setSentInvites((current) => [invite, ...current].slice(0, 5));
       setEmail("");
+      setInviteModalOpen(false);
     },
   });
 
@@ -32,14 +37,18 @@ export function AdminUsersPageView() {
   const { activeCount, roleCount } = getUserManagementStats(members);
 
   return (
-    <div className="page-shell space-y-6">
+    <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Tenant administration"
-        title="Membership roster and invitations"
-        description="The current backend supports listing tenant memberships and sending invite links. It does not expose an invitation listing endpoint or the raw acceptance token."
-      />
+        title="Membership roster and campus invitations"
+        description="Manage who belongs in the tenant, which roles are represented, and which new members should receive archive access next."
+      >
+        <Button variant="secondary" size="sm" onClick={() => setInviteModalOpen(true)}>
+          Send invitation
+        </Button>
+      </PageHeader>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Active users"
           value={String(activeCount)}
@@ -64,31 +73,54 @@ export function AdminUsersPageView() {
         />
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <MembershipRosterCard
-          memberships={members}
-          errorMessage={membershipsQuery.error?.message}
-        />
+      <TabPanels
+        tabs={[
+          {
+            id: "roster",
+            label: "Roster",
+            description:
+              "Membership management stays isolated in one view so the page body does not compete with invite tools.",
+            content: (
+              <MembershipRosterCard
+                memberships={members}
+                errorMessage={membershipsQuery.error?.message}
+              />
+            ),
+          },
+          {
+            id: "invites",
+            label: "Recent invites",
+            description:
+              "Session-local invite history is available on demand instead of occupying a second permanent column.",
+            content: <RecentInvitesCard sentInvites={sentInvites} />,
+          },
+        ]}
+      />
 
-        <div className="space-y-5">
-          <InviteFormCard
-            email={email}
-            role={role}
-            errorMessage={inviteMutation.error?.message}
-            isPending={inviteMutation.isPending}
-            onEmailChange={setEmail}
-            onRoleChange={setRole}
-            onSubmit={() =>
-              inviteMutation.mutate({
-                tenantId: activeTenantId,
-                email,
-                role,
-              })
-            }
-          />
-          <RecentInvitesCard sentInvites={sentInvites} />
-        </div>
-      </section>
+      <Modal
+        open={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        eyebrow="Invite form"
+        title="Send campus invitation"
+        description="Create a new membership invitation without forcing the form into the main administration canvas."
+      >
+        <InviteFormCard
+          embedded
+          email={email}
+          role={role}
+          errorMessage={inviteMutation.error?.message}
+          isPending={inviteMutation.isPending}
+          onEmailChange={setEmail}
+          onRoleChange={setRole}
+          onSubmit={() =>
+            inviteMutation.mutate({
+              tenantId: activeTenantId,
+              email,
+              role,
+            })
+          }
+        />
+      </Modal>
     </div>
   );
 }

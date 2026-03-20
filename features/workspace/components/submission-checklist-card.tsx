@@ -2,15 +2,41 @@
 
 import { SurfaceCard } from "@/components/ui/surface-card";
 
-export function SubmissionChecklistCard() {
+interface SubmissionChecklistCardProps {
+  embedded?: boolean;
+}
+
+function ChecklistContent() {
+  return (
+    <ul className="space-y-4">
+      {[
+        "Metadata fields are complete and aligned with department standards.",
+        "Adviser assignment is confirmed if review routing needs it.",
+        "Main thesis PDF and supporting files are prepared for upload before submission.",
+        "The abstract is polished for academic review.",
+        "Year, department, and program reflect the final archive record.",
+      ].map((item) => (
+        <li key={item} className="flex items-start gap-3">
+          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[color:var(--color-secondary)]" />
+          <span className="text-sm leading-7 text-[color:var(--color-muted-foreground)]">
+            {item}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function SubmissionChecklistCard({
+  embedded = false,
+}: SubmissionChecklistCardProps) {
+  if (embedded) {
+    return <ChecklistContent />;
+  }
+
   return (
     <SurfaceCard eyebrow="Submission checklist" title="Ready-to-submit controls">
-      <ul className="text-muted space-y-2">
-        <li>Metadata fields are completed and aligned with department standards.</li>
-        <li>Adviser assignment is confirmed if review routing needs it.</li>
-        <li>The abstract is ready for institutional review.</li>
-        <li>The year, department, and program reflect the final archive record.</li>
-      </ul>
+      <ChecklistContent />
     </SurfaceCard>
   );
 }

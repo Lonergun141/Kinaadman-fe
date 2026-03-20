@@ -8,12 +8,14 @@ export async function listTheses(payload: {
   tenantId: string;
   search?: string;
   status?: string;
+  authorUserId?: string;
 }) {
   const response = await requestJson<ThesisListItemDto[]>("/theses/", {
     tenantId: payload.tenantId,
     query: {
       search: payload.search,
       status: payload.status === "ALL" ? undefined : payload.status,
+      author_user_id: payload.authorUserId,
     },
   });
 
@@ -35,6 +37,7 @@ export async function createThesis(payload: {
   year: number;
   departmentId?: string;
   programId?: string;
+  createdByMembershipId?: string | null;
 }) {
   const response = await requestJson<ThesisDetailDto>("/theses/", {
     tenantId: payload.tenantId,
@@ -45,6 +48,7 @@ export async function createThesis(payload: {
       year: payload.year,
       department_id: payload.departmentId || null,
       program_id: payload.programId || null,
+      created_by_membership_id: payload.createdByMembershipId || null,
     },
   });
 
@@ -79,6 +83,7 @@ export async function assignAuthor(payload: {
   tenantId: string;
   thesisId: string;
   displayName: string;
+  userId?: string;
 }) {
   const response = await requestJson<ThesisDetailDto>(
     `/theses/${payload.thesisId}/authors`,
@@ -87,6 +92,7 @@ export async function assignAuthor(payload: {
       method: "POST",
       body: {
         display_name: payload.displayName,
+        user_id: payload.userId || null,
         sort_order: 0,
       },
     },

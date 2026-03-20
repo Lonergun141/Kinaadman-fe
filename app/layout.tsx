@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Newsreader } from "next/font/google";
+import { RouteTransitionIndicator } from "@/components/ui/route-transition-indicator";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -33,7 +34,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${newsreader.variable}`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <RouteTransitionIndicator />
+          {children}
+        </Providers>
       </body>
     </html>
   );

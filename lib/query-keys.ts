@@ -3,8 +3,13 @@ export const queryKeys = {
     bootstrap: (tenantId: string) => ["tenant", "bootstrap", tenantId] as const,
   },
   repository: {
-    theses: (tenantId: string, search: string, status: string) =>
-      ["repository", "theses", tenantId, search, status] as const,
+    theses: (
+      tenantId: string,
+      search: string,
+      status: string,
+      authorUserId?: string,
+    ) =>
+      ["repository", "theses", tenantId, search, status, authorUserId || "all"] as const,
     thesisDetail: (tenantId: string, thesisId: string) =>
       ["repository", "thesis-detail", tenantId, thesisId] as const,
     departments: (tenantId: string) =>

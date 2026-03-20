@@ -15,7 +15,7 @@ export function RecentInvitesCard({ sentInvites }: RecentInvitesCardProps) {
   return (
     <SurfaceCard eyebrow="Recent responses" title="Created invites">
       {sentInvites.length ? (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {sentInvites.map((invite) => (
             <div key={invite.id} className="card-item">
               <p className="text-sm font-semibold text-[color:var(--color-primary)]">

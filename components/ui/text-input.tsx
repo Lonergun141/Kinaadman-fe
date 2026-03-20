@@ -18,7 +18,7 @@ export function TextInput({
   const inputId = id || label.toLowerCase().replace(/\s+/g, "-");
 
   return (
-    <label className="flex flex-col gap-2" htmlFor={inputId}>
+    <label className="flex flex-col gap-2.5" htmlFor={inputId}>
       <span className="text-primary-label">{label}</span>
       <input
         id={inputId}

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { RootLoadingScreen } from "@/components/ui/loading-shells";
 import { getDefaultRouteForRole, isAppRole } from "@/lib/access";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -23,5 +24,5 @@ export default function HomePage() {
     router.replace(getDefaultRouteForRole(sessionUser.role));
   }, [hasHydrated, router, sessionUser]);
 
-  return <div className="min-h-screen bg-[color:var(--color-background)]" />;
+  return <RootLoadingScreen />;
 }

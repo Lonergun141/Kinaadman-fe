@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
 import { SelectField } from "@/components/ui/select-field";
 import { TextInput } from "@/components/ui/text-input";
 import { assignAdviser, assignAuthor, createThesis, submitThesis, updateThesis } from "@/features/repository/api";
@@ -25,6 +24,7 @@ import {
 interface WorkspaceEditorProps {
   activeTenantId: string;
   currentMembershipId: string | null;
+  currentUserId: string | null;
   sessionName: string;
   selectedThesis: ThesisDetail | null;
   departments: DepartmentOption[];
@@ -36,6 +36,7 @@ interface WorkspaceEditorProps {
 export function WorkspaceEditor({
   activeTenantId,
   currentMembershipId,
+  currentUserId,
   sessionName,
   selectedThesis,
   departments,
@@ -64,6 +65,7 @@ export function WorkspaceEditor({
     () => getAvailablePrograms(programs, departmentId),
     [departmentId, programs],
   );
+  const isEditing = Boolean(selectedThesis);
 
   async function persistDraft(thesisId: string) {
     const updated = await updateThesis({
@@ -96,12 +98,14 @@ export function WorkspaceEditor({
         year: Number(year) || new Date().getFullYear(),
         departmentId: departmentId || undefined,
         programId: programId || undefined,
+        createdByMembershipId: currentMembershipId,
       });
 
       await assignAuthor({
         tenantId: activeTenantId,
         thesisId: created.id,
         displayName: sessionName,
+        userId: currentUserId || undefined,
       });
 
       if (adviserMembershipId) {
@@ -180,37 +184,33 @@ export function WorkspaceEditor({
     submitMutation.error?.message ||
     "";
 
-  if (!selectedThesis) {
-    return (
-      <EmptyState
-        title="No selected draft"
-        description="Choose a draft from the queue or create a new one."
-        action={
-          <Button
-            size="sm"
-            onClick={() => createMutation.mutate()}
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? "Creating..." : "Create first draft"}
-          </Button>
-        }
-      />
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-4 py-3 text-sm text-[color:var(--color-muted-foreground)]">
-        The current backend does not expose thesis ownership in list responses,
-        so this workspace shows tenant-visible authoring records rather than a
-        strict &quot;my theses&quot; feed.
+    <div className="space-y-8">
+      <div className="inline-note">
+        <p className="muted-label">
+          {isEditing ? "Editing selected draft" : "Start a new thesis record"}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[color:var(--color-muted-foreground)]">
+          {isEditing
+            ? "This desk is limited to thesis and capstone records where you are listed as an author."
+            : "Create your thesis record first, then continue refining it before sending it into review."}
+        </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
         <TextInput
-          label="Title"
+          label="Research title"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
         />
+        <TextInput
+          label="Publication year"
+          value={year}
+          onChange={(event) => setYear(event.target.value)}
+        />
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-2">
         <SelectField
           label="Department"
           value={departmentId}
@@ -220,88 +220,124 @@ export function WorkspaceEditor({
 
             setDepartmentId(nextDepartmentId);
 
-            if (!nextPrograms.some((program) => program.id === programId)) {
+            if (!nextPrograms.some((programOption) => programOption.id === programId)) {
               setProgramId(nextPrograms[0]?.id || "");
             }
           }}
         >
-          {departments.map((department) => (
-            <option key={department.id} value={department.id}>
-              {department.name}
+          {departments.length ? null : (
+            <option value="">No departments yet</option>
+          )}
+          {departments.map((departmentOption) => (
+            <option key={departmentOption.id} value={departmentOption.id}>
+              {departmentOption.name}
             </option>
           ))}
         </SelectField>
+
         <SelectField
           label="Program"
           value={programId}
           onChange={(event) => setProgramId(event.target.value)}
           disabled={!availablePrograms.length}
+          hint={!availablePrograms.length ? "Create a program first in tenant policy." : undefined}
         >
-          {availablePrograms.map((program) => (
-            <option key={program.id} value={program.id}>
-              {program.name}
-            </option>
-          ))}
-        </SelectField>
-        <TextInput
-          label="Year"
-          value={year}
-          onChange={(event) => setYear(event.target.value)}
-        />
-        <SelectField
-          label="Assigned adviser"
-          value={adviserMembershipId}
-          hint={
-            selectedThesis.advisers.length
-              ? "The current backend only adds advisers; replacing them is not supported."
-              : "Optional at draft stage."
-          }
-          disabled={Boolean(selectedThesis.advisers.length)}
-          onChange={(event) => setAdviserMembershipId(event.target.value)}
-        >
-          <option value="">No adviser assigned</option>
-          {adviserOptions.map((membership) => (
-            <option key={membership.id} value={membership.id}>
-              {membership.user.email}
+          {availablePrograms.length ? null : (
+            <option value="">No programs yet</option>
+          )}
+          {availablePrograms.map((programOption) => (
+            <option key={programOption.id} value={programOption.id}>
+              {programOption.name}
             </option>
           ))}
         </SelectField>
       </div>
-      <label className="flex flex-col gap-1.5">
+
+      <SelectField
+        label="Assigned adviser"
+        value={adviserMembershipId}
+        hint={
+          selectedThesis?.advisers.length
+            ? "The current backend only adds advisers; replacing them is not supported."
+            : "Optional at draft stage."
+        }
+        disabled={Boolean(selectedThesis?.advisers.length)}
+        onChange={(event) => setAdviserMembershipId(event.target.value)}
+      >
+        <option value="">No adviser assigned</option>
+        {adviserOptions.map((membership) => (
+          <option key={membership.id} value={membership.id}>
+            {membership.user.email}
+          </option>
+        ))}
+      </SelectField>
+
+      <label className="flex flex-col gap-2.5">
         <span className="text-primary-label">Abstract</span>
         <textarea
           value={abstract}
           onChange={(event) => setAbstract(event.target.value)}
-          className="input-base min-h-40 resize-y"
+          className="input-base min-h-48 resize-y"
+          placeholder="Summarize the purpose, method, and contribution of the research."
         />
       </label>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-3">
+          <p className="text-primary-label">Workflow actions</p>
+          <div className="flex flex-wrap gap-3">
+            {isEditing ? (
+              <>
+                <Button
+                  onClick={() => saveMutation.mutate()}
+                  disabled={saveMutation.isPending || submitMutation.isPending}
+                >
+                  {saveMutation.isPending ? "Saving..." : "Save draft"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => submitMutation.mutate()}
+                  disabled={saveMutation.isPending || submitMutation.isPending}
+                >
+                  {submitMutation.isPending ? "Submitting..." : "Submit thesis"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => createMutation.mutate()}
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? "Creating..." : "Create another record"}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => createMutation.mutate()}
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? "Creating..." : "Create first draft"}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="inline-note">
+          <p className="text-primary-label">Current state</p>
+          <p className="mt-2 font-serif text-[1.45rem] leading-tight text-[color:var(--color-primary)]">
+            {isEditing ? "Draft open for editing" : "Composer ready"}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[color:var(--color-muted-foreground)]">
+            {isEditing
+              ? "Save changes before submitting to keep metadata, adviser routing, and academic structure aligned."
+              : "Create the record first, then continue refining it from the queue."}
+          </p>
+        </div>
+      </div>
+
       {errorMessage ? (
-        <div className="rounded-lg bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
+        <div className="rounded-[0.5rem] bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
           {errorMessage}
         </div>
       ) : null}
-      <div className="flex flex-wrap gap-3">
-        <Button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending || submitMutation.isPending}
-        >
-          {saveMutation.isPending ? "Saving..." : "Save draft"}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => submitMutation.mutate()}
-          disabled={saveMutation.isPending || submitMutation.isPending}
-        >
-          {submitMutation.isPending ? "Submitting..." : "Submit thesis"}
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => createMutation.mutate()}
-          disabled={createMutation.isPending}
-        >
-          {createMutation.isPending ? "Creating..." : "Create new draft"}
-        </Button>
-      </div>
     </div>
   );
 }

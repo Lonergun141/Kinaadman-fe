@@ -22,7 +22,7 @@ export function SecuritySettingsCard({
 }: SecuritySettingsCardProps) {
   return (
     <SurfaceCard eyebrow="Security" title="Session and lockout">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <SelectField
           label="Require OTP"
           value={booleanValue(policy.require_2fa_email_otp)}

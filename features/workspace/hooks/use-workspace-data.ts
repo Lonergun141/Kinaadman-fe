@@ -15,17 +15,20 @@ interface UseWorkspaceDataOptions {
   tenantId: string;
   selectedId: string;
   sessionEmail?: string | null;
+  sessionUserId?: string | null;
 }
 
 export function useWorkspaceData({
   tenantId,
   selectedId,
   sessionEmail,
+  sessionUserId,
 }: UseWorkspaceDataOptions) {
   const thesesQuery = useRepositoryThesesQuery({
     tenantId,
     search: "",
     status: "ALL",
+    authorUserId: sessionUserId || undefined,
   });
   const { departmentsQuery, programsQuery } = useRepositoryCatalog(tenantId);
   const membershipsQuery = useTenantMembershipsQuery(tenantId);

@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { SurfaceCard } from "@/components/ui/surface-card";
+import { TabPanels } from "@/components/ui/tab-panels";
 import { getDisplayNameFromEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTenantStore } from "@/stores/tenant-store";
@@ -21,6 +22,7 @@ export function WorkspacePageView() {
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const tenantContext = useTenantStore((state) => state.tenantContext);
   const [selectedId, setSelectedId] = useState("");
+  const [activeTabId, setActiveTabId] = useState("compose");
 
   const {
     thesesQuery,
@@ -35,6 +37,7 @@ export function WorkspacePageView() {
     tenantId: activeTenantId,
     selectedId,
     sessionEmail: sessionUser?.email,
+    sessionUserId: sessionUser?.id,
   });
 
   const { draftCount, submittedCount } = useMemo(
@@ -46,31 +49,33 @@ export function WorkspacePageView() {
     : "Campus member";
   const tenantDisplayName =
     tenantContext?.branding?.display_name || tenantContext?.name || "Tenant archive";
+  const selectedThesis = selectedThesisQuery.data || null;
 
   return (
-    <div className="page-shell space-y-6">
+    <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Student workspace"
-        title="Draft editing and submission workflow"
-        description="Create thesis drafts, maintain repository metadata, and submit a completed record into the review queue."
+        title="Draft desk and submission workflow"
+        description="Create your thesis record, refine its metadata, and submit it for review through a student-owned workflow."
       >
         <span className="pill-outline">Signed in as {sessionName}</span>
+        <span className="pill-outline">{tenantDisplayName}</span>
       </PageHeader>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Workspace records"
+          label="My records"
           value={String(workspaceTheses.length)}
-          detail="Current backend theses visible inside the authoring workspace."
+          detail="Thesis and capstone records where you are already an author."
         />
         <StatCard
           label="Drafts"
           value={String(draftCount)}
-          detail="Entries that can still be submitted to review."
+          detail="Entries still editable before review submission."
           tone="secondary"
         />
         <StatCard
-          label="Submitted"
+          label="In workflow"
           value={String(submittedCount)}
           detail="Records already moving through review states."
         />
@@ -82,42 +87,86 @@ export function WorkspacePageView() {
         />
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="space-y-5">
-          <WorkspaceQueueCard
-            theses={workspaceTheses}
-            selectedId={resolvedSelectedId}
-            errorMessage={thesesQuery.error?.message}
-            onSelect={setSelectedId}
+      <SurfaceCard
+        eyebrow="Workspace tasks"
+        title="Move through drafting, editing, and submission in focused tabs"
+        className="xl:px-10 xl:py-9"
+      >
+        <div className="space-y-6">
+          <p className="max-w-3xl text-base leading-8 text-[color:var(--color-muted-foreground)]">
+            The workspace follows the documented student flow: manage only your own
+            thesis records, complete the academic metadata, review submission
+            requirements, and track status once the draft enters review.
+          </p>
+
+          <TabPanels
+            activeTabId={activeTabId}
+            onTabChange={setActiveTabId}
+            tabsClassName="w-full justify-start"
+            tabs={[
+              {
+                id: "drafts",
+                label: "My records",
+                description:
+                  "Open a thesis or capstone record that already lists you as an author, then continue editing.",
+                content: (
+                  <WorkspaceQueueCard
+                    embedded
+                    theses={workspaceTheses}
+                    selectedId={resolvedSelectedId}
+                    errorMessage={thesesQuery.error?.message}
+                    onSelect={(thesisId) => {
+                      setSelectedId(thesisId);
+                      setActiveTabId("compose");
+                    }}
+                  />
+                ),
+              },
+              {
+                id: "compose",
+                label: resolvedSelectedId ? "Edit draft" : "New draft",
+                description:
+                  "Capture the thesis metadata, abstract, and adviser details in one dedicated authoring tab.",
+                content: resolvedSelectedId && selectedThesisQuery.isPending ? (
+                  <EmptyState
+                    title="Loading draft"
+                    description="The frontend is fetching the selected thesis detail from the backend."
+                  />
+                ) : (
+                  <WorkspaceEditor
+                    key={resolvedSelectedId || "new"}
+                    activeTenantId={activeTenantId}
+                    currentMembershipId={currentMembership?.id || null}
+                    currentUserId={sessionUser?.id || null}
+                    sessionName={sessionName}
+                    selectedThesis={selectedThesis}
+                    departments={departmentsQuery.data ?? []}
+                    programs={programsQuery.data ?? []}
+                    adviserOptions={adviserOptions}
+                    onCreated={setSelectedId}
+                  />
+                ),
+              },
+              {
+                id: "checklist",
+                label: "Checklist",
+                description:
+                  "Review the documented submission steps before moving your record into review.",
+                content: <SubmissionChecklistCard embedded />,
+              },
+              {
+                id: "activity",
+                label: "Activity",
+                description:
+                  "Check the latest status changes and workflow milestones for the current draft.",
+                content: (
+                  <WorkspaceTimelineCard thesis={selectedThesis} embedded />
+                ),
+              },
+            ]}
           />
-
-          <SurfaceCard eyebrow="Draft editor" title="Metadata editing surface">
-            {resolvedSelectedId && selectedThesisQuery.isPending ? (
-              <EmptyState
-                title="Loading draft"
-                description="The frontend is fetching the selected thesis detail from the backend."
-              />
-            ) : (
-              <WorkspaceEditor
-                key={resolvedSelectedId || "new"}
-                activeTenantId={activeTenantId}
-                currentMembershipId={currentMembership?.id || null}
-                sessionName={sessionName}
-                selectedThesis={selectedThesisQuery.data || null}
-                departments={departmentsQuery.data ?? []}
-                programs={programsQuery.data ?? []}
-                adviserOptions={adviserOptions}
-                onCreated={setSelectedId}
-              />
-            )}
-          </SurfaceCard>
         </div>
-
-        <div className="space-y-5">
-          <SubmissionChecklistCard />
-          <WorkspaceTimelineCard thesis={selectedThesisQuery.data || null} />
-        </div>
-      </section>
+      </SurfaceCard>
     </div>
   );
 }

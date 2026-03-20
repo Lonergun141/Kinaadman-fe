@@ -23,14 +23,14 @@ export default function AdminAuditPage() {
   const latestTimestamp = events[0]?.created_at || null;
 
   return (
-    <div className="page-shell space-y-6">
+    <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Tenant administration"
         title="Audit log"
-        description="The current backend exposes a tenant-scoped audit feed at `/v1/core/audit`."
+        description="Inspect the tenant-scoped activity feed so administrative actions remain visible, attributable, and easy to scan over time."
       />
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Visible events"
           value={String(events.length)}
@@ -62,7 +62,7 @@ export default function AdminAuditPage() {
             description={auditQuery.error.message}
           />
         ) : events.length ? (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {events.map((event) => (
               <div key={event.id} className="card-item">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

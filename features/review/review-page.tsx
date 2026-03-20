@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Drawer } from "@/components/ui/drawer";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { getDisplayNameFromEmail } from "@/lib/utils";
@@ -18,6 +21,8 @@ export function ReviewPageView() {
   const activeTenantId = useWorkspaceStore((state) => state.activeTenantId);
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const [selectedId, setSelectedId] = useState("");
+  const [queueOpen, setQueueOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
   const [notesBySelection, setNotesBySelection] = useState<
     Record<string, string>
   >({});
@@ -47,14 +52,24 @@ export function ReviewPageView() {
     });
 
   return (
-    <div className="page-shell space-y-6">
+    <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Review queue"
-        title="Adviser and librarian decision workspace"
-        description="Review actions now call the live thesis workflow endpoints. Queue visibility is tenant-wide because the backend does not currently expose reviewer-specific queue filters."
-      />
+        title="Adviser and librarian decision desk"
+        description="Keep queue triage, decision writing, and lifecycle context in a single workspace so reviewers can move faster without losing important metadata."
+      >
+        <span className="pill-outline">{sessionName}</span>
+        <Button variant="secondary" size="sm" onClick={() => setQueueOpen(true)}>
+          Open queue
+        </Button>
+        {focused ? (
+          <Button variant="ghost" size="sm" onClick={() => setContextOpen(true)}>
+            View context
+          </Button>
+        ) : null}
+      </PageHeader>
 
-      <section className="grid gap-3 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-3">
         <StatCard
           label="Reviewable records"
           value={String(queue.length)}
@@ -74,43 +89,79 @@ export function ReviewPageView() {
         />
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_300px]">
+        <div className="hidden xl:block">
+          <ReviewQueueCard
+            queue={queue}
+            selectedId={resolvedSelectedId}
+            errorMessage={thesesQuery.error?.message}
+            onSelect={setSelectedId}
+          />
+        </div>
+
+        {focused ? (
+          <>
+            <ReviewFocusCard
+              activeRole={activeRole}
+              thesis={focused}
+              note={note}
+              errorMessage={errorMessage}
+              isReviewPending={reviewMutation.isPending}
+              isPublishPending={publishMutation.isPending}
+              isUnpublishPending={unpublishMutation.isPending}
+              onNoteChange={(value) =>
+                setNotesBySelection((current) => ({
+                  ...current,
+                  [noteKey]: value,
+                }))
+              }
+              onApprove={() => reviewMutation.mutate("APPROVED")}
+              onRequestChanges={() =>
+                reviewMutation.mutate("CHANGES_REQUESTED")
+              }
+              onPublish={() => publishMutation.mutate()}
+              onUnpublish={() => unpublishMutation.mutate()}
+            />
+            <div className="hidden xl:block">
+              <ReviewContextCard thesis={focused} />
+            </div>
+          </>
+        ) : (
+          <EmptyState
+            title="No submission selected"
+            description="Choose a thesis from the queue to open the review desk and write a decision."
+          />
+        )}
+      </section>
+
+      <Drawer
+        open={queueOpen}
+        onClose={() => setQueueOpen(false)}
+        eyebrow="Review queue"
+        title="Pending submissions"
+        description="Switch review focus without forcing the queue into the main decision surface."
+      >
         <ReviewQueueCard
+          embedded
           queue={queue}
           selectedId={resolvedSelectedId}
           errorMessage={thesesQuery.error?.message}
-          onSelect={setSelectedId}
+          onSelect={(thesisId) => {
+            setSelectedId(thesisId);
+            setQueueOpen(false);
+          }}
         />
+      </Drawer>
 
-        <div className="space-y-5">
-          {focused ? (
-            <>
-              <ReviewFocusCard
-                activeRole={activeRole}
-                thesis={focused}
-                note={note}
-                errorMessage={errorMessage}
-                isReviewPending={reviewMutation.isPending}
-                isPublishPending={publishMutation.isPending}
-                isUnpublishPending={unpublishMutation.isPending}
-                onNoteChange={(value) =>
-                  setNotesBySelection((current) => ({
-                    ...current,
-                    [noteKey]: value,
-                  }))
-                }
-                onApprove={() => reviewMutation.mutate("APPROVED")}
-                onRequestChanges={() =>
-                  reviewMutation.mutate("CHANGES_REQUESTED")
-                }
-                onPublish={() => publishMutation.mutate()}
-                onUnpublish={() => unpublishMutation.mutate()}
-              />
-              <ReviewContextCard thesis={focused} />
-            </>
-          ) : null}
-        </div>
-      </section>
+      <Drawer
+        open={contextOpen && Boolean(focused)}
+        onClose={() => setContextOpen(false)}
+        eyebrow="Review context"
+        title="Lifecycle and backend limitations"
+        description="Keep supporting metadata nearby without crowding the primary decision area."
+      >
+        {focused ? <ReviewContextCard thesis={focused} embedded /> : null}
+      </Drawer>
     </div>
   );
 }

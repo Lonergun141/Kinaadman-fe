@@ -47,101 +47,115 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="archive-grid relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
-      <div className="relative grid w-full max-w-[1380px] gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
-        <div className="flex flex-col justify-center space-y-8 lg:pr-6">
-          <div className="space-y-4">
-            <p className="muted-label">Campus access</p>
-            <h1 className="max-w-4xl text-[clamp(3rem,6vw,6rem)] leading-[0.9] font-medium tracking-[-0.05em] text-[color:var(--color-primary)]">
-              Connect the frontend to the live archive tenant.
-            </h1>
-            <p className="text-muted max-w-xl text-[15px]">
-              This sign-in now uses the Django backend directly. Enter a valid
-              campus email, password, and tenant ID so the client can bootstrap
-              the active archive context.
+    <main className="archive-grid min-h-screen px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-[1480px] gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+        <section className="dark-rail flex flex-col justify-between rounded-[0.5rem] px-6 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/56">
+                The Living Archive
+              </p>
+              <h1 className="font-serif text-[clamp(3rem,6vw,5.8rem)] italic leading-[0.88] tracking-[-0.05em] text-white">
+                Enter the archive with a clear tenant context.
+              </h1>
+              <p className="max-w-xl text-base leading-8 text-white/74">
+                Sign in with a campus identity, connect to the correct tenant, and
+                continue directly into the part of the archive that matches your
+                role and responsibilities.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  title: "Institution first",
+                  desc: "The repository prioritizes research readability and academic metadata over dashboard noise.",
+                },
+                {
+                  title: "Tenant resolved",
+                  desc: "The current backend requires a tenant ID so the app can load the correct branding and policy context.",
+                },
+                {
+                  title: "Role aware",
+                  desc: "After sign-in the product routes you to repository, workspace, review, or administration automatically.",
+                },
+              ].map((feature) => (
+                <article key={feature.title} className="rail-panel px-4 py-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">
+                    {feature.title}
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-white/78">{feature.desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="rail-panel mt-8 px-5 py-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">
+              Sign-in posture
+            </p>
+            <p className="mt-3 text-sm leading-7 text-white/78">
+              The connected backend already contains tenants, memberships, and thesis
+              records, so users can authenticate and begin exploring without a seed
+              step or demo mode.
             </p>
           </div>
+        </section>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {[
-              {
-                title: "Backend auth",
-                desc: "Credentials are posted to /v1/auth/login and the session is refreshed through the live token endpoint.",
-              },
-              {
-                title: "Tenant bootstrap",
-                desc: "After login the app resolves branding and policy from /v1/tenants/bootstrap for the selected tenant.",
-              },
-              {
-                title: "Membership role",
-                desc: "The UI role is inferred from /v1/users/memberships instead of the placeholder login role.",
-              },
-            ].map((feature) => (
-              <article key={feature.title} className="paper-panel min-h-full px-5 py-5">
-                <p className="muted-label">{feature.title}</p>
-                <p className="mt-3 font-serif text-[1.15rem] leading-snug text-[color:var(--color-primary)]">
-                  {feature.desc}
+        <section className="flex items-center">
+          <div className="paper-panel w-full px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-3">
+                <p className="muted-label">Live sign-in</p>
+                <h2 className="text-[2.2rem] leading-[0.98] tracking-[-0.03em] text-balance">
+                  Access your archive workspace
+                </h2>
+                <p className="text-muted max-w-xl">
+                  Use a valid campus email, your password, and the target tenant ID.
+                  The application resolves branding, access policy, and membership
+                  immediately after authentication.
                 </p>
-              </article>
-            ))}
-          </div>
-        </div>
-
-        <div className="paper-panel relative overflow-hidden p-6 sm:p-8 lg:p-10">
-          <form className="relative space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2 pt-6">
-              <p className="muted-label">Live sign-in</p>
-              <h2 className="text-[2rem] leading-tight font-medium text-[color:var(--color-primary)]">
-                Enter the repository
-              </h2>
-              <p className="text-muted max-w-md">
-                The tenant ID is required because the current backend resolves
-                archive context from the `X-Tenant-ID` header.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <TextInput
-                label="Campus email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-              <TextInput
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-              <TextInput
-                label="Tenant ID"
-                value={tenantId}
-                hint="Use the UUID of the tenant you want to browse."
-                onChange={(event) => setTenantId(event.target.value)}
-              />
-            </div>
-
-            {loginMutation.error ? (
-              <div className="rounded-lg bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
-                {loginMutation.error.message}
               </div>
-            ) : null}
 
-            <div className="space-y-3 pt-2">
-              <Button
-                fullWidth
-                size="lg"
-                type="submit"
-                disabled={loginMutation.isPending}
-              >
-                {loginMutation.isPending ? "Checking access..." : "Enter workspace"}
-              </Button>
-              <p className="text-xs leading-6 text-[color:var(--color-muted)]">
-                The local backend database already contains tenants, memberships,
-                and thesis records, so no extra seed step is required before login.
-              </p>
-            </div>
-          </form>
-        </div>
+              <div className="grid gap-4">
+                <TextInput
+                  label="Campus email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="student@university.edu"
+                />
+                <TextInput
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <TextInput
+                  label="Tenant ID"
+                  value={tenantId}
+                  hint="Use the UUID for the tenant you want to open."
+                  onChange={(event) => setTenantId(event.target.value)}
+                />
+              </div>
+
+              {loginMutation.error ? (
+                <div className="rounded-[0.5rem] bg-[rgba(220,38,38,0.08)] px-4 py-3 text-sm text-[color:var(--color-error)]">
+                  {loginMutation.error.message}
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="max-w-sm text-xs leading-6 text-[color:var(--color-muted)]">
+                  Access is scoped by tenant policy, membership role, and the active
+                  backend session. The app does not fall back to placeholder data.
+                </div>
+                <Button size="lg" type="submit" disabled={loginMutation.isPending}>
+                  {loginMutation.isPending ? "Checking access..." : "Enter workspace"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </section>
       </div>
     </main>
   );

@@ -77,87 +77,47 @@ export default function ThesisDetailPage() {
         ]}
       />
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_320px]">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="paper-panel p-7 sm:p-8 lg:p-10">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-4xl">
-              <p className="muted-label">Thesis record</p>
-              <h1 className="mt-4 max-w-4xl text-[clamp(2.2rem,3.8vw,3.8rem)] leading-[1.02] tracking-[-0.03em]">
-                {thesis.title}
-              </h1>
-              <p className="text-muted mt-4 max-w-2xl">
-                Full thesis metadata from the live backend, including authorship,
-                academic classification, and publication lifecycle.
-              </p>
-            </div>
-            <StatusBadge status={thesis.status} />
-          </div>
-
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="pill-outline">
-              {thesis.department?.name || "Unassigned department"}
-            </span>
-            <span className="pill-outline">
-              {thesis.program?.name || "Unassigned program"}
-            </span>
-            <span className="pill-outline">{thesis.year}</span>
-          </div>
-
-          <div className="mt-10">
-            <p className="muted-label">Research citation</p>
-            <p className="mt-3 max-w-3xl font-serif text-[1.18rem] leading-8 text-[color:var(--color-primary)]">
-              {thesis.authors.map((author) => author.display_name).join(", ")}.{" "}
-              <em>{thesis.title}</em>. {thesis.program?.name || "Program not set"},{" "}
-              {thesis.year}.
-            </p>
-          </div>
-
-          <div className="mt-10">
-            <div className="relative">
-              <div className="absolute left-0 right-0 top-4 h-[2px] bg-[rgba(15,42,68,0.08)]" />
-              <div
-                className="absolute left-0 top-4 h-[2px] bg-[color:var(--color-secondary)]"
-                style={{
-                  width: `${(lifecycleIndex / (lifecycleSteps.length - 1)) * 100}%`,
-                }}
-              />
-              <div className="relative flex justify-between gap-3">
-                {lifecycleSteps.map((step, index) => {
-                  const complete = index <= lifecycleIndex;
-
-                  return (
-                    <div
-                      key={step}
-                      className="flex min-w-0 flex-1 flex-col items-center gap-3"
-                    >
-                      <span
-                        className={
-                          complete
-                            ? "flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-secondary)] text-[11px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_12px_20px_rgba(201,162,39,0.24)]"
-                            : "flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-surface-high)] text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--color-muted)]"
-                        }
-                      >
-                        {index + 1}
-                      </span>
-                      <span
-                        className={
-                          complete
-                            ? "text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-primary)]"
-                            : "text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]"
-                        }
-                      >
-                        {step.replace("_", " ")}
-                      </span>
-                    </div>
-                  );
-                })}
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-4xl space-y-4">
+                <p className="muted-label">Thesis record</p>
+                <h1 className="max-w-4xl text-[clamp(2.5rem,4vw,4.2rem)] leading-[0.94] tracking-[-0.04em] text-balance">
+                  {thesis.title}
+                </h1>
+                <p className="text-muted max-w-2xl">
+                  This view keeps citation, contributors, lifecycle, and archive
+                  classification visible together so readers can assess the record
+                  before moving into the full detail.
+                </p>
               </div>
+              <StatusBadge status={thesis.status} />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <span className="pill-outline">
+                {thesis.department?.name || "Unassigned department"}
+              </span>
+              <span className="pill-outline">
+                {thesis.program?.name || "Unassigned program"}
+              </span>
+              <span className="pill-outline">{thesis.year}</span>
+            </div>
+
+            <div className="inline-note">
+              <p className="text-primary-label">Research citation</p>
+              <p className="mt-3 max-w-3xl font-serif text-[1.18rem] leading-8 text-[color:var(--color-primary)]">
+                {thesis.authors.map((author) => author.display_name).join(", ")}.{" "}
+                <em>{thesis.title}</em>. {thesis.program?.name || "Program not set"},{" "}
+                {thesis.year}.
+              </p>
             </div>
           </div>
         </div>
 
-        <SurfaceCard eyebrow="Archive profile" title="Metadata">
-          <dl className="space-y-3">
+        <SurfaceCard eyebrow="Archive profile" title="Metadata at a glance">
+          <dl className="space-y-4">
             {[
               {
                 label: "Department",
@@ -174,6 +134,50 @@ export default function ThesisDetailPage() {
             ))}
           </dl>
         </SurfaceCard>
+      </section>
+
+      <section className="paper-panel p-7 sm:p-8 lg:p-10">
+        <p className="muted-label">Lifecycle</p>
+        <div className="mt-8 relative">
+          <div className="absolute left-0 right-0 top-4 h-[2px] bg-[rgba(15,42,68,0.08)]" />
+          <div
+            className="absolute left-0 top-4 h-[2px] bg-[color:var(--color-secondary)]"
+            style={{
+              width: `${(lifecycleIndex / (lifecycleSteps.length - 1)) * 100}%`,
+            }}
+          />
+          <div className="relative grid gap-6 sm:grid-cols-5">
+            {lifecycleSteps.map((step, index) => {
+              const complete = index <= lifecycleIndex;
+
+              return (
+                <div
+                  key={step}
+                  className="flex min-w-0 flex-col items-center gap-3 text-center"
+                >
+                  <span
+                    className={
+                      complete
+                        ? "flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-secondary)] text-[11px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_12px_20px_rgba(201,162,39,0.24)]"
+                        : "flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-surface-high)] text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--color-muted)]"
+                    }
+                  >
+                    {index + 1}
+                  </span>
+                  <span
+                    className={
+                      complete
+                        ? "text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-primary)]"
+                        : "text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]"
+                    }
+                  >
+                    {step.replace("_", " ")}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_360px]">
@@ -222,7 +226,7 @@ export default function ThesisDetailPage() {
 
         <div className="space-y-5 xl:sticky xl:top-28 xl:self-start">
           <SurfaceCard eyebrow="Timeline" title="Lifecycle dates">
-            <dl className="space-y-3">
+            <dl className="space-y-4">
               {[
                 { label: "Updated", value: formatDateTime(thesis.updated_at) },
                 { label: "Submitted", value: formatDateTime(thesis.submitted_at) },

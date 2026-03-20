@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { bootstrapTenant, logoutFromBackend } from "@/features/auth/api";
+import { AppShellLoadingScreen } from "@/components/ui/loading-shells";
 import { canAccessPath, getDefaultRouteForRole, isAppRole } from "@/lib/access";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTenantStore } from "@/stores/tenant-store";
@@ -33,6 +34,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const setActiveTenantId = useWorkspaceStore((state) => state.setActiveTenantId);
 
   const sidebarOpen = useUiStore((state) => state.sidebarOpen);
+  const clearNavigationPending = useUiStore(
+    (state) => state.clearNavigationPending,
+  );
   const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
 
   const currentRole = sessionUser && isAppRole(sessionUser.role) ? sessionUser.role : null;
@@ -114,7 +118,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setSidebarOpen(false);
-  }, [pathname, setSidebarOpen]);
+    clearNavigationPending();
+  }, [clearNavigationPending, pathname, setSidebarOpen]);
 
   useEffect(() => {
     if (!sidebarOpen) {
@@ -171,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     !tenantContext ||
     !canAccessPath(currentRole, pathname)
   ) {
-    return <div className="min-h-screen bg-[color:var(--color-background)]" />;
+    return <AppShellLoadingScreen />;
   }
 
   return (
@@ -192,13 +197,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           sidebarOpen={sidebarOpen}
           tenantContext={tenantContext}
           activeRole={currentRole}
-          sessionUser={sessionUser}
           onNavigate={() => setSidebarOpen(false)}
-          onSignOut={() => {
-            void logoutFromBackend().finally(() => {
-              router.replace("/login");
-            });
-          }}
         />
 
         {sidebarOpen ? (
@@ -213,17 +212,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="relative flex h-full min-h-0 min-w-0 flex-col overflow-y-auto bg-[color:var(--color-background)]">
           <TopBar
             railId={railId}
-            pathname={pathname}
             sidebarOpen={sidebarOpen}
             tenantContext={tenantContext}
             activeRole={currentRole}
             sessionUser={sessionUser}
             onOpenNavigation={() => setSidebarOpen(!sidebarOpen)}
+            onSignOut={() => {
+              void logoutFromBackend().finally(() => {
+                router.replace("/login");
+              });
+            }}
           />
           <main
             id="main-content"
             tabIndex={-1}
-            className="min-h-0 flex-1 pb-12 pt-4 outline-none"
+            className="min-h-0 flex-1 pb-12 pt-2 outline-none lg:pb-16"
           >
             {children}
           </main>

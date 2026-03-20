@@ -21,7 +21,7 @@ export function MembershipRosterCard({
       {errorMessage ? (
         <EmptyState title="Roster unavailable" description={errorMessage} />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-[color:var(--color-border)]">
+        <div className="table-shell">
           <table className="min-w-full text-sm">
             <thead className="bg-[color:var(--color-primary)] text-left text-[11px] uppercase tracking-[0.1em] text-white">
               <tr>

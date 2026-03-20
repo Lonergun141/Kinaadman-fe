@@ -4,10 +4,12 @@ Next.js frontend integrated against the existing Django backend in `../Kinaadman
 
 ## Frontend Runtime Setup
 - Backend origin is proxied through Next.js rewrites via `KINAADMAN_BACKEND_ORIGIN`.
-- The browser talks to `/api/backend/v1/*`, so local development avoids CORS issues from the frontend side.
+- Browser API calls can target the backend directly through `NEXT_PUBLIC_BACKEND_API_BASE`.
+- If `NEXT_PUBLIC_BACKEND_API_BASE` is not set, the browser falls back to `/api/backend/v1/*`.
 - Default tenant bootstrap is prefilled through `NEXT_PUBLIC_DEFAULT_TENANT_ID`.
 
 Current local env:
+- `NEXT_PUBLIC_BACKEND_API_BASE=http://127.0.0.1:8000/v1`
 - `KINAADMAN_BACKEND_ORIGIN=http://127.0.0.1:8000`
 - `NEXT_PUBLIC_DEFAULT_TENANT_ID=3fec168e-2c39-46f3-8734-462d8562d9d7`
 

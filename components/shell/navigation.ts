@@ -4,6 +4,7 @@ export type NavItem = {
   href: string;
   label: string;
   section: string;
+  description: string;
   roles: AppRole[];
 };
 
@@ -12,48 +13,56 @@ export const navigation: NavItem[] = [
     href: "/repository",
     label: "Repository",
     section: "Library",
+    description: "Browse and search the institutional archive.",
     roles: ["STUDENT", "ADVISER", "LIBRARIAN", "TENANT_ADMIN"],
   },
   {
     href: "/profile",
     label: "Profile",
     section: "Common",
+    description: "Review your tenant membership and session posture.",
     roles: ["STUDENT", "ADVISER", "LIBRARIAN", "TENANT_ADMIN"],
   },
   {
     href: "/workspace",
     label: "Workspace",
     section: "Student",
+    description: "Draft, edit, and submit thesis records.",
     roles: ["STUDENT"],
   },
   {
     href: "/review",
     label: "Review Queue",
     section: "Review",
+    description: "Evaluate submissions and move them through workflow.",
     roles: ["ADVISER", "LIBRARIAN"],
   },
   {
     href: "/admin/users",
-    label: "Users & Roles",
+    label: "Users",
     section: "Administration",
+    description: "Manage memberships and send invite links.",
     roles: ["TENANT_ADMIN"],
   },
   {
     href: "/admin/branding",
     label: "Branding",
     section: "Administration",
+    description: "Shape the tenant archive identity and masthead.",
     roles: ["TENANT_ADMIN"],
   },
   {
     href: "/admin/policy",
-    label: "Policies",
+    label: "Policy",
     section: "Administration",
+    description: "Configure access, security, departments, and programs.",
     roles: ["TENANT_ADMIN"],
   },
   {
     href: "/admin/audit",
-    label: "Audit Log",
+    label: "Audit",
     section: "Administration",
+    description: "Inspect recent tenant activity and system events.",
     roles: ["TENANT_ADMIN"],
   },
 ];

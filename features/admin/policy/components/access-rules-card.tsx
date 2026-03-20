@@ -16,7 +16,7 @@ export function AccessRulesCard({
 }: AccessRulesCardProps) {
   return (
     <SurfaceCard eyebrow="Access rules" title="Membership gating">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <SelectField
           label="Campus only"
           value={booleanValue(policy.campus_only)}
