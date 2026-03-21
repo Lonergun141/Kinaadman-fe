@@ -21,10 +21,10 @@ export function StatCard({
   tone = "primary",
 }: StatCardProps) {
   return (
-    <article className={`paper-panel px-5 py-5 ${toneClasses[tone]}`}>
+    <article className={`paper-panel px-4 py-4 sm:px-5 sm:py-4 ${toneClasses[tone]}`}>
       <p className="muted-label">{label}</p>
-      <div className="mt-4 flex items-end justify-between gap-4">
-        <p className="font-serif text-[2.35rem] leading-none tracking-[-0.05em] text-[color:var(--color-primary)]">
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <p className="font-serif text-[2.15rem] leading-none tracking-[-0.05em] text-[color:var(--color-primary)]">
           {value}
         </p>
         <span
@@ -38,7 +38,7 @@ export function StatCard({
           }
         />
       </div>
-      <p className="text-muted mt-3 text-[13px]">{detail}</p>
+      <p className="text-muted mt-2.5 text-[13px]">{detail}</p>
     </article>
   );
 }

@@ -62,9 +62,8 @@ export default function InviteAcceptPage() {
                 Join the archive with a trusted campus invitation.
               </h1>
               <p className="max-w-xl text-base leading-8 text-white/74">
-                Finish onboarding by setting a password for the membership that was
-                issued to you. After acceptance, the application redirects you back
-                to sign-in so you can enter the repository normally.
+                Finish setting up your account by choosing a password. Once that is
+                done, you can return to sign-in and enter the archive normally.
               </p>
             </div>
 
@@ -73,9 +72,8 @@ export default function InviteAcceptPage() {
                 What this page does
               </p>
               <p className="mt-3 text-sm leading-7 text-white/78">
-                The current frontend can accept an invitation token directly, but the
-                backend does not expose a list of pending invitations or preview
-                information before acceptance.
+                This page lets you finish your invitation in one step so you can
+                move straight into your archive account.
               </p>
             </div>
           </div>
@@ -98,8 +96,8 @@ export default function InviteAcceptPage() {
                   Set your archive password
                 </h2>
                 <p className="text-muted">
-                  The invitation token is already embedded in this route. Create a
-                  password and confirm it to finish the onboarding step.
+                  Your invitation is already linked to this page. Choose a password
+                  and confirm it to finish setting up your account.
                 </p>
               </div>
 
@@ -127,14 +125,13 @@ export default function InviteAcceptPage() {
 
                 {acceptMutation.isSuccess ? (
                   <div className="rounded-[0.5rem] bg-[rgba(22,163,74,0.08)] px-4 py-3 text-sm text-[color:var(--color-success)]">
-                    Invitation accepted. Redirecting to sign-in.
+                    Invitation accepted. Returning you to sign-in.
                   </div>
                 ) : null}
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <p className="max-w-sm text-xs leading-6 text-[color:var(--color-muted)]">
-                    Password confirmation happens in the browser first, then the raw
-                    invitation token is posted to the backend acceptance endpoint.
+                    Make sure both passwords match before you continue.
                   </p>
                   <Button size="lg" type="submit" disabled={acceptMutation.isPending}>
                     {acceptMutation.isPending

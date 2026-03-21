@@ -28,7 +28,7 @@ function QueueContent({
     return (
       <EmptyState
         title="No thesis drafts yet"
-        description="Use the editor to the right to create the first draft and open the submission workflow."
+        description="Use the draft details stage to create your first record, then continue through files and submission."
       />
     );
   }

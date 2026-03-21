@@ -36,7 +36,7 @@ export function WorkspaceTimelineCard({
   ) : (
     <EmptyState
       title="No activity yet"
-      description="Draft activity will appear here once a thesis record exists."
+      description="Status updates will appear here after a thesis record has been created and moved through the workflow."
     />
   );
 

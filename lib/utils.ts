@@ -28,6 +28,21 @@ export function formatDateTime(value: string | null | undefined) {
   }).format(new Date(value));
 }
 
+export function formatFileSize(sizeBytes: number) {
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const unitIndex = Math.min(
+    Math.floor(Math.log(sizeBytes) / Math.log(1024)),
+    units.length - 1,
+  );
+  const scaledValue = sizeBytes / 1024 ** unitIndex;
+
+  return `${scaledValue.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
 export function toTitleCase(value: string) {
   return value
     .toLowerCase()

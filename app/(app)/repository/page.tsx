@@ -24,6 +24,16 @@ import { useTenantStore } from "@/stores/tenant-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 
 const RESULTS_PER_PAGE = 10;
+const STATUS_OPTIONS = [
+  "ALL",
+  "PUBLISHED",
+  "SUBMITTED",
+  "IN_REVIEW",
+  "APPROVED",
+  "DRAFT",
+  "CHANGES_REQUESTED",
+  "ARCHIVED",
+] as const;
 
 export default function RepositoryPage() {
   const activeRole = useWorkspaceStore((state) => state.activeRole);
@@ -238,6 +248,7 @@ export default function RepositoryPage() {
           <option value="APPROVED">Approved</option>
           <option value="PUBLISHED">Published</option>
           <option value="CHANGES_REQUESTED">Changes requested</option>
+          <option value="ARCHIVED">Archived</option>
         </SelectField>
 
         <SelectField
@@ -288,164 +299,214 @@ export default function RepositoryPage() {
     );
   }
 
+  function renderRailButton(
+    label: string,
+    active: boolean,
+    onClick: () => void,
+  ) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={
+          active
+            ? "block w-full rounded-[0.45rem] px-0 py-1.5 text-left text-sm font-semibold text-[color:var(--color-secondary)]"
+            : "block w-full rounded-[0.45rem] px-0 py-1.5 text-left text-sm text-[color:var(--color-muted-foreground)] transition-colors hover:text-[color:var(--color-primary)]"
+        }
+      >
+        {label}
+      </button>
+    );
+  }
+
   if (activeRole === "STUDENT") {
     return (
       <div className="page-shell">
-        <div className="mx-auto max-w-[1080px] space-y-10">
-          <section className="space-y-5">
-            <div className="max-w-3xl space-y-3">
-              <p className="muted-label">Repository</p>
-              <h1 className="text-[clamp(2.5rem,4vw,4.2rem)] leading-[0.94] tracking-[-0.04em] text-balance">
-                Search the archive
-              </h1>
-              <p className="text-muted max-w-2xl">
-                Find theses quickly through a search-first catalogue built for
-                scanning titles, metadata, and publication status without extra
-                dashboard noise.
-              </p>
+        <div className="mx-auto max-w-[1180px] space-y-5">
+          <section className="rounded-[0.85rem] border border-[rgba(15,42,68,0.08)] bg-[rgba(255,255,255,0.94)] shadow-[0_18px_32px_rgba(0,21,42,0.04)]">
+            <div className="flex items-center gap-3 border-b border-[rgba(15,42,68,0.08)] px-4 py-3 sm:px-5">
+              <span className="font-serif text-[1.8rem] italic text-[color:var(--color-primary-container)]">
+                {tenantDisplayName}
+              </span>
+              <span className="text-sm text-[color:var(--color-muted-foreground)]">
+                Repository
+              </span>
             </div>
-
-            <div className="space-y-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <label
-                  className="relative flex-1 rounded-full bg-[rgba(255,255,255,0.84)] px-5 shadow-[0_18px_32px_rgba(0,21,42,0.08),inset_0_1px_0_rgba(255,255,255,0.62)] backdrop-blur-[20px] transition-all duration-200 focus-within:shadow-[0_0_0_4px_rgba(201,162,39,0.12),0_24px_38px_rgba(0,21,42,0.08)]"
-                  htmlFor="repository-search"
+            <div className="flex flex-col gap-3 px-4 py-3 sm:px-5 lg:flex-row lg:items-center">
+              <label className="relative flex-1" htmlFor="repository-search">
+                <svg
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-muted)]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.8}
+                  stroke="currentColor"
                 >
-                  <svg
-                    className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[color:var(--color-muted)]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.8}
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                    />
-                  </svg>
-                  <input
-                    id="repository-search"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search by title, topic, department, or program"
-                    className="w-full bg-transparent py-4 pl-8 pr-3 text-base text-[color:var(--color-foreground)] outline-none placeholder:text-[color:var(--color-muted)] sm:text-lg"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                   />
-                </label>
-
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant="secondary"
-                    className="min-w-[152px]"
-                    onClick={() => setFiltersOpen(true)}
-                  >
-                    {extraFilterCount > 0
-                      ? `Filters (${extraFilterCount})`
-                      : "Filters"}
+                </svg>
+                <input
+                  id="repository-search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search theses, capstones, or topics"
+                  className="h-11 w-full rounded-[0.65rem] border border-[rgba(15,42,68,0.12)] bg-white pl-10 pr-4 text-[15px] text-[color:var(--color-foreground)] outline-none transition-shadow placeholder:text-[color:var(--color-muted)] focus:border-[rgba(201,162,39,0.5)] focus:shadow-[0_0_0_3px_rgba(201,162,39,0.12)]"
+                />
+              </label>
+              <div className="flex items-center gap-2 xl:hidden">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="min-w-[132px]"
+                  onClick={() => setFiltersOpen(true)}
+                >
+                  {extraFilterCount > 0 ? `Filters (${extraFilterCount})` : "Filters"}
+                </Button>
+                {hasAnyFilters ? (
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    Clear
                   </Button>
-                  {hasAnyFilters ? (
-                    <Button variant="ghost" onClick={clearFilters}>
-                      Clear search
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-1">
-                  <p className="text-primary-label">
-                    {repositoryQuery.isPending
-                      ? "Loading the archive"
-                      : repositoryQuery.error
-                        ? "Archive unavailable"
-                        : deferredSearch
-                          ? `${filteredTheses.length} matching result${
-                              filteredTheses.length === 1 ? "" : "s"
-                            } in ${tenantDisplayName}`
-                          : `${visibleTheses.length} record${
-                              visibleTheses.length === 1 ? "" : "s"
-                            } in ${tenantDisplayName}`}
-                  </p>
-                  <p className="text-sm leading-7 text-[color:var(--color-muted-foreground)]">
-                    {deferredSearch
-                      ? "Results narrow in place as you search, while department, program, and status filters stay tucked away until needed."
-                      : "The full tenant repository is shown by default. Start typing to narrow the list."}
-                  </p>
-                  {!repositoryQuery.isPending && !repositoryQuery.error && filteredTheses.length > 0 ? (
-                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-[color:var(--color-muted)]">
-                      Showing {pageStart}-{pageEnd} of {filteredTheses.length}
-                    </p>
-                  ) : null}
-                </div>
-
-                {deferredSearch || activeFilterLabels.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 lg:max-w-[420px] lg:justify-end">
-                    {deferredSearch ? (
-                      <span className="pill-outline">Query: {deferredSearch}</span>
-                    ) : null}
-                    {activeFilterLabels.map((label) => (
-                      <span key={label} className="pill-outline">
-                        {label}
-                      </span>
-                    ))}
-                  </div>
                 ) : null}
               </div>
             </div>
+            <div className="border-t border-[rgba(15,42,68,0.08)] px-4 py-2.5 text-xs text-[color:var(--color-muted-foreground)] sm:px-5">
+              {repositoryQuery.isPending
+                ? "Loading archive records"
+                : repositoryQuery.error
+                  ? "Archive unavailable"
+                  : deferredSearch
+                    ? `About ${filteredTheses.length} result${filteredTheses.length === 1 ? "" : "s"} for "${deferredSearch}"`
+                    : `About ${visibleTheses.length} result${visibleTheses.length === 1 ? "" : "s"} in ${tenantDisplayName}`}
+            </div>
           </section>
 
-          <section className="space-y-6">
-            {repositoryQuery.error ? (
-              <EmptyState
-                title="Repository unavailable"
-                description={repositoryQuery.error.message}
-              />
-            ) : repositoryQuery.isPending ? (
-              <EmptyState
-                title="Loading archive"
-                description="The frontend is fetching repository records and preparing the search results list."
-              />
-            ) : visibleTheses.length === 0 ? (
-              <EmptyState
-                title="No repository records yet"
-                description="This tenant does not have any thesis or capstone records available yet."
-              />
-            ) : filteredTheses.length > 0 ? (
-              <div className="space-y-6">
-                <ScholarResults
-                  items={paginatedTheses}
-                  tenantDisplayName={tenantDisplayName}
-                />
-                <ResultsPagination
-                  currentPage={resolvedPage}
-                  totalPages={totalPages}
-                  totalResults={filteredTheses.length}
-                  pageStart={pageStart}
-                  pageEnd={pageEnd}
-                  onPageChange={setCurrentPage}
-                />
+          <div className="grid gap-6 xl:grid-cols-[220px_minmax(0,1fr)]">
+            <aside className="hidden xl:block">
+              <div className="sticky top-28 space-y-5 border-r border-[rgba(15,42,68,0.08)] pr-5">
+                <div className="space-y-3">
+                  <p className="muted-label">Status</p>
+                  <div className="space-y-2">
+                    {STATUS_OPTIONS.map((option) =>
+                      renderRailButton(
+                        option === "ALL" ? "Any status" : toTitleCase(option),
+                        status === option,
+                        () => setStatus(option),
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="muted-label">Department</p>
+                  <div className="space-y-2">
+                    {renderRailButton("Any department", department === "ALL", () => {
+                        setDepartment("ALL");
+                        setProgram("ALL");
+                      })}
+                    {departments.slice(0, 8).map((option) =>
+                      renderRailButton(
+                        option.name,
+                        department === option.id,
+                        () => {
+                          setDepartment(option.id);
+                          setProgram("ALL");
+                        },
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <SelectField
+                    label="Program"
+                    value={program}
+                    onChange={(event) => setProgram(event.target.value)}
+                  >
+                    <option value="ALL">Any program</option>
+                    {programs.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </SelectField>
+                </div>
+
+                {hasAnyFilters ? (
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : null}
               </div>
-            ) : (
-              <EmptyState
-                title="No matching records"
-                description="Try a broader keyword or clear one of the filters to reopen the archive list."
-                action={
-                  hasAnyFilters ? (
-                    <Button variant="ghost" onClick={clearFilters}>
-                      Clear filters
-                    </Button>
-                  ) : undefined
-                }
-              />
-            )}
-          </section>
+            </aside>
+
+            <section className="space-y-4">
+              {(deferredSearch || activeFilterLabels.length > 0) && !repositoryQuery.isPending && !repositoryQuery.error ? (
+                <div className="flex flex-wrap gap-2">
+                  {deferredSearch ? (
+                    <span className="pill-outline">Search: {deferredSearch}</span>
+                  ) : null}
+                  {activeFilterLabels.map((label) => (
+                    <span key={label} className="pill-outline">
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              {repositoryQuery.error ? (
+                <EmptyState
+                  title="Repository unavailable"
+                  description={repositoryQuery.error.message}
+                />
+              ) : repositoryQuery.isPending ? (
+                <EmptyState
+                  title="Loading archive"
+                  description="Gathering archive records and preparing the result list."
+                />
+              ) : visibleTheses.length === 0 ? (
+                <EmptyState
+                  title="No repository records yet"
+                  description="This tenant does not have any thesis or capstone records available yet."
+                />
+              ) : filteredTheses.length > 0 ? (
+                <div className="space-y-4">
+                  <ScholarResults
+                    items={paginatedTheses}
+                    tenantDisplayName={tenantDisplayName}
+                  />
+                  <ResultsPagination
+                    currentPage={resolvedPage}
+                    totalPages={totalPages}
+                    totalResults={filteredTheses.length}
+                    pageStart={pageStart}
+                    pageEnd={pageEnd}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              ) : (
+                <EmptyState
+                  title="No matching records"
+                  description="Try a broader keyword or clear one of the filters to reopen the archive list."
+                  action={
+                    hasAnyFilters ? (
+                      <Button variant="ghost" onClick={clearFilters}>
+                        Clear filters
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              )}
+            </section>
+          </div>
 
           <Drawer
             open={filtersOpen}
             onClose={() => setFiltersOpen(false)}
             eyebrow="Search filters"
-            title="Refine archive results"
-            description="Keep the main page focused on search and open the metadata controls only when you need them."
+            title="Refine results"
+            description="Narrow the list without leaving the search page."
           >
             {renderFilterControls()}
           </Drawer>
@@ -458,19 +519,15 @@ export default function RepositoryPage() {
     <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Repository"
-        title={`${tenantDisplayName} collection`}
         description="Search, filter, and review the live tenant archive through a document-first catalogue that keeps metadata readable and actions obvious."
       >
-        <span className="pill-outline">{roleLabels[activeRole]}</span>
-        <span className="pill-outline">{sessionName}</span>
-        <span className="pill-outline">{tenantDisplayName}</span>
       </PageHeader>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Visible records"
           value={String(visibleTheses.length)}
-          detail="Tenant-scoped catalogue entries returned by the backend."
+          detail="Records currently visible in this archive view."
         />
         <StatCard
           label="Published"
@@ -524,7 +581,7 @@ export default function RepositoryPage() {
                 ) : thesesQuery.isPending ? (
                   <EmptyState
                     title="Loading archive"
-                    description="The frontend is fetching live repository records from the backend."
+                    description="Preparing the latest archive records for reading."
                   />
                 ) : filteredTheses.length > 0 ? (
                   <div className="space-y-4">
@@ -555,9 +612,9 @@ export default function RepositoryPage() {
                   <div className="grid gap-5 lg:grid-cols-2">
                     <SurfaceCard eyebrow="Search logic" title="How results are resolved">
                       <p className="text-muted">
-                        Keyword search and status filtering are sent to the backend.
-                        Department and program controls refine the returned dataset
-                        locally to keep the archive responsive across large result sets.
+                        Search looks across titles and abstracts first, while
+                        department, program, and status filters help you narrow the
+                        archive to the records that matter most.
                       </p>
                     </SurfaceCard>
                     <SurfaceCard eyebrow="Coverage" title="Current archive spread">
@@ -596,7 +653,7 @@ export default function RepositoryPage() {
                 {filteredTheses.length} / {visibleTheses.length}
               </p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--color-muted-foreground)]">
-                Records in the current lens after server and client refinement.
+                Records currently visible after your filters are applied.
               </p>
             </div>
 

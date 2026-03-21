@@ -47,7 +47,7 @@ export default function AdminBrandingPage() {
     <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Tenant administration"
-        title="White-label branding studio"
+
         description="Shape the tenant masthead, primary palette, and overall first impression so the archive feels institutional and deliberate."
       />
 

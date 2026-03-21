@@ -2,8 +2,10 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  archiveThesis,
   publishThesis,
   reviewThesis,
+  startReview,
   unpublishThesis,
 } from "@/features/repository/api";
 import {
@@ -51,23 +53,81 @@ export function useReviewMutations({
     onSuccess: invalidateReviewQueries,
   });
 
+  const startReviewMutation = useMutation({
+    mutationFn: async () => {
+      if (!reviewerMembershipId || !thesisId) {
+        throw new Error("Current reviewer membership is unavailable.");
+      }
+
+      return startReview({
+        tenantId,
+        thesisId,
+        reviewerMembershipId,
+        note,
+      });
+    },
+    onSuccess: invalidateReviewQueries,
+  });
+
   const publishMutation = useMutation({
-    mutationFn: () => publishThesis(tenantId, thesisId),
+    mutationFn: () => {
+      if (!reviewerMembershipId || !thesisId) {
+        throw new Error("Current reviewer membership is unavailable.");
+      }
+
+      return publishThesis({
+        tenantId,
+        thesisId,
+        actorMembershipId: reviewerMembershipId,
+        note,
+      });
+    },
     onSuccess: invalidateReviewQueries,
   });
 
   const unpublishMutation = useMutation({
-    mutationFn: () => unpublishThesis(tenantId, thesisId),
+    mutationFn: () => {
+      if (!reviewerMembershipId || !thesisId) {
+        throw new Error("Current reviewer membership is unavailable.");
+      }
+
+      return unpublishThesis({
+        tenantId,
+        thesisId,
+        actorMembershipId: reviewerMembershipId,
+        note,
+      });
+    },
+    onSuccess: invalidateReviewQueries,
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: () => {
+      if (!reviewerMembershipId || !thesisId) {
+        throw new Error("Current reviewer membership is unavailable.");
+      }
+
+      return archiveThesis({
+        tenantId,
+        thesisId,
+        actorMembershipId: reviewerMembershipId,
+        note,
+      });
+    },
     onSuccess: invalidateReviewQueries,
   });
 
   return {
     reviewMutation,
+    startReviewMutation,
     publishMutation,
     unpublishMutation,
+    archiveMutation,
     errorMessage:
+      startReviewMutation.error?.message ||
       reviewMutation.error?.message ||
       publishMutation.error?.message ||
+      archiveMutation.error?.message ||
       unpublishMutation.error?.message ||
       "",
   };

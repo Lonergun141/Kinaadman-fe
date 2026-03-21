@@ -63,6 +63,7 @@ export interface ThesisAuthorDto {
   id: string;
   display_name: string;
   sort_order: number;
+  user_id?: string | null;
 }
 
 export interface ThesisAdviserDto {
@@ -70,16 +71,93 @@ export interface ThesisAdviserDto {
   adviser_email: string | null;
 }
 
+export interface KeywordDto {
+  id: string;
+  value: string;
+}
+
+export interface ThesisStatusHistoryDto {
+  id: string;
+  from_status: string;
+  to_status: string;
+  note: string;
+  changed_at: string;
+  changed_by_email: string | null;
+  changed_by_role: string | null;
+}
+
+export interface ThesisReviewDto {
+  id: string;
+  decision: string;
+  comment: string;
+  created_at: string;
+  reviewer_email: string | null;
+  reviewer_role: string | null;
+}
+
+export interface ThesisFileDto {
+  id: string;
+  kind: string;
+  access_level: string;
+  version_number: number;
+  is_current: boolean;
+  label: string;
+  created_at: string;
+  filename: string | null;
+  content_type: string | null;
+  size_bytes: number | null;
+  checksum: string | null;
+}
+
+export interface ThesisMetadataVersionDto {
+  id: string;
+  version_number: number;
+  snapshot: Record<string, unknown>;
+  note: string;
+  created_at: string;
+}
+
+export interface CitationExportDto {
+  format: string;
+  filename: string;
+  content: string;
+}
+
+export interface CollectionBucketDto {
+  value: string;
+  label: string;
+  count: number;
+}
+
+export interface PublicCollectionSummaryDto {
+  thesis_types: CollectionBucketDto[];
+  departments: CollectionBucketDto[];
+  programs: CollectionBucketDto[];
+  years: CollectionBucketDto[];
+}
+
 export interface ThesisListItemDto {
   id: string;
   title: string;
   year: number;
   status: string;
+  visibility: string;
+  thesis_type: string;
+  language: string;
+  research_category: string;
+  methodology: string;
+  college_name: string;
+  campus_name: string;
+  public_slug: string;
   submitted_at: string | null;
   approved_at: string | null;
   published_at: string | null;
+  defense_date: string | null;
+  embargo_until: string | null;
   created_at: string;
   updated_at: string;
+  authors: ThesisAuthorDto[];
+  keywords: KeywordDto[];
   department?: DepartmentDto | null;
   program?: ProgramDto | null;
 }
@@ -88,6 +166,27 @@ export interface ThesisDetailDto extends ThesisListItemDto {
   abstract: string;
   authors: ThesisAuthorDto[];
   advisers: ThesisAdviserDto[];
+  rights_license: string;
+  panel_members: string[];
+  status_history: ThesisStatusHistoryDto[];
+  reviews: ThesisReviewDto[];
+  files: ThesisFileDto[];
+  metadata_versions: ThesisMetadataVersionDto[];
+  is_embargo_active: boolean;
+}
+
+export interface PublicThesisListItemDto extends ThesisListItemDto {
+  tenant_slug: string;
+  tenant_name: string;
+  public_url: string;
+}
+
+export interface PublicThesisDetailDto extends ThesisDetailDto {
+  tenant_slug: string;
+  tenant_name: string;
+  public_url: string;
+  citation_formats: Record<string, string>;
+  can_download_public_files: boolean;
 }
 
 export interface TenantMembershipUserDto {

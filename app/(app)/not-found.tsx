@@ -5,7 +5,7 @@ export default function AppNotFound() {
     <FullScreenMessage
       eyebrow="Not found"
       title="This archive record does not exist"
-      description="The requested thesis or workspace route could not be found in the current prototype dataset."
+      description="The page or record you requested could not be found in this archive."
       actionHref="/repository"
       actionLabel="Return to repository"
     />

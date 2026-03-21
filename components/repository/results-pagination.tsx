@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-
 interface ResultsPaginationProps {
   currentPage: number;
   totalPages: number;
@@ -44,20 +42,20 @@ export function ResultsPagination({
   const pages = getPageWindow(currentPage, totalPages);
 
   return (
-    <div className="flex flex-col gap-4 rounded-[0.5rem] bg-[rgba(255,255,255,0.7)] px-5 py-4 shadow-[0_18px_30px_rgba(0,21,42,0.04)] sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm leading-7 text-[color:var(--color-muted-foreground)]">
+    <div className="flex flex-col gap-3 border-t border-[rgba(15,42,68,0.08)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs leading-6 text-[color:var(--color-muted-foreground)]">
         Showing {pageStart}-{pageEnd} of {totalResults} results
       </p>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
+          className="inline-flex h-9 items-center justify-center rounded-[0.55rem] border border-[rgba(15,42,68,0.12)] bg-white px-3 text-[13px] font-medium text-[color:var(--color-muted-foreground)] transition-colors hover:bg-[rgba(15,42,68,0.04)] disabled:pointer-events-none disabled:opacity-50"
         >
           Previous
-        </Button>
+        </button>
 
         {pages.map((page, index) => {
           const previousPage = pages[index - 1];
@@ -73,8 +71,8 @@ export function ResultsPagination({
                 onClick={() => onPageChange(page)}
                 className={
                   page === currentPage
-                    ? "inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[color:var(--color-primary)] px-3 text-sm font-semibold text-white shadow-[0_14px_24px_rgba(0,21,42,0.18)]"
-                    : "inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[rgba(255,255,255,0.7)] px-3 text-sm font-semibold text-[color:var(--color-primary)] shadow-[inset_0_0_0_1px_rgba(15,42,68,0.08)] transition-colors hover:bg-[color:var(--color-surface-high)]"
+                    ? "inline-flex h-9 min-w-9 items-center justify-center rounded-[0.55rem] bg-[color:var(--color-primary)] px-3 text-[13px] font-semibold text-white shadow-[0_12px_22px_rgba(0,21,42,0.14)]"
+                    : "inline-flex h-9 min-w-9 items-center justify-center rounded-[0.55rem] border border-[rgba(15,42,68,0.12)] bg-white px-3 text-[13px] font-medium text-[color:var(--color-primary)] transition-colors hover:bg-[rgba(15,42,68,0.04)]"
                 }
                 aria-current={page === currentPage ? "page" : undefined}
               >
@@ -84,14 +82,14 @@ export function ResultsPagination({
           );
         })}
 
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
+          type="button"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
+          className="inline-flex h-9 items-center justify-center rounded-[0.55rem] border border-[rgba(15,42,68,0.12)] bg-white px-3 text-[13px] font-medium text-[color:var(--color-muted-foreground)] transition-colors hover:bg-[rgba(15,42,68,0.04)] disabled:pointer-events-none disabled:opacity-50"
         >
           Next
-        </Button>
+        </button>
       </div>
     </div>
   );

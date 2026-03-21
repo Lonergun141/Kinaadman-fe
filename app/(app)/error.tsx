@@ -13,7 +13,7 @@ export default function AppError({
     <FullScreenMessage
       eyebrow="Workspace error"
       title="The archive view failed to render"
-      description="The interface hit an unexpected client-side error. Reset the current route and try again."
+      description="Something went wrong while opening this view. Try reloading the page and continue from there."
       secondaryAction={<Button onClick={reset}>Reload this view</Button>}
     />
   );

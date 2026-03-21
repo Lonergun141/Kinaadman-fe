@@ -33,7 +33,7 @@ export function RecentInvitesCard({ sentInvites }: RecentInvitesCardProps) {
       ) : (
         <EmptyState
           title="No invites yet"
-          description="Sent invitations will appear here for this browser session. The backend does not expose a full invitation roster."
+          description="Invitations you send in this session will appear here so you can keep track of who still needs access."
         />
       )}
     </SurfaceCard>

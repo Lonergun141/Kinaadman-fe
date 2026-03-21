@@ -91,7 +91,6 @@ export function AdminPolicyPageView() {
     <div className="page-shell space-y-8">
       <PageHeader
         eyebrow="Tenant administration"
-        title="Tenant policy and academic structure"
         description="Adjust access posture, security rules, and the academic catalogue that authors use when classifying thesis records."
       />
 

@@ -39,9 +39,8 @@ export function AdminUsersPageView() {
   return (
     <div className="page-shell space-y-8">
       <PageHeader
-        eyebrow="Tenant administration"
-        title="Membership roster and campus invitations"
-        description="Manage who belongs in the tenant, which roles are represented, and which new members should receive archive access next."
+        eyebrow="Archive administration"
+        description="Manage who belongs in this archive, which roles are represented, and who should receive access next."
       >
         <Button variant="secondary" size="sm" onClick={() => setInviteModalOpen(true)}>
           Send invitation
@@ -52,23 +51,23 @@ export function AdminUsersPageView() {
         <StatCard
           label="Active users"
           value={String(activeCount)}
-          detail="Current active memberships."
+          detail="People who currently have access."
         />
         <StatCard
           label="Roles represented"
           value={String(roleCount)}
-          detail="Distinct membership roles inside the tenant."
+          detail="Different roles currently represented in this archive."
           tone="secondary"
         />
         <StatCard
           label="Session invites"
           value={String(sentInvites.length)}
-          detail="Invites successfully created during this browser session."
+          detail="Invitations created during this visit."
         />
         <StatCard
-          label="Tenant scope"
+          label="Archive access"
           value={activeTenantId ? "Resolved" : "Missing"}
-          detail="All roster actions are scoped by the active tenant header."
+          detail="People and invitations are managed within the archive you currently have open."
           tone="neutral"
         />
       </section>
@@ -91,7 +90,7 @@ export function AdminUsersPageView() {
             id: "invites",
             label: "Recent invites",
             description:
-              "Session-local invite history is available on demand instead of occupying a second permanent column.",
+              "Recently created invitations stay close at hand without taking over the main page.",
             content: <RecentInvitesCard sentInvites={sentInvites} />,
           },
         ]}
@@ -102,7 +101,7 @@ export function AdminUsersPageView() {
         onClose={() => setInviteModalOpen(false)}
         eyebrow="Invite form"
         title="Send campus invitation"
-        description="Create a new membership invitation without forcing the form into the main administration canvas."
+        description="Invite a new person without interrupting the main roster view."
       >
         <InviteFormCard
           embedded

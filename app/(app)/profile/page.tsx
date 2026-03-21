@@ -4,13 +4,85 @@ import { useMemo } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
-import { SurfaceCard } from "@/components/ui/surface-card";
 import { useTenantMembershipsQuery } from "@/features/admin/hooks/use-tenant-memberships-query";
 import { roleLabels } from "@/lib/roles";
 import { formatDateTime, getDisplayNameFromEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTenantStore } from "@/stores/tenant-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
+
+function ProfileCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-[0.95rem] border border-[rgba(15,42,68,0.08)] bg-white shadow-[0_18px_32px_rgba(0,21,42,0.04)]">
+      <header className="border-b border-[rgba(15,42,68,0.08)] px-5 py-4 sm:px-6">
+        <h2 className="font-serif text-[1.4rem] leading-tight text-[color:var(--color-primary)]">
+          {title}
+        </h2>
+        {description ? (
+          <p className="mt-1.5 text-sm leading-6 text-[color:var(--color-muted-foreground)]">
+            {description}
+          </p>
+        ) : null}
+      </header>
+      <div className="px-5 py-2 sm:px-6">{children}</div>
+    </section>
+  );
+}
+
+function DetailList({
+  rows,
+}: {
+  rows: Array<{ label: string; value: string }>;
+}) {
+  return (
+    <dl className="divide-y divide-[rgba(15,42,68,0.08)]">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="grid gap-1 py-3.5 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-start sm:gap-4"
+        >
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-muted)]">
+            {row.label}
+          </dt>
+          <dd className="text-sm leading-6 text-[color:var(--color-foreground)] break-all">
+            {row.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function PolicyBadge({
+  label,
+  active,
+}: {
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-[0.75rem] border border-[rgba(15,42,68,0.08)] bg-[rgba(247,249,251,0.92)] px-4 py-3">
+      <span className="text-sm text-[color:var(--color-foreground)]">{label}</span>
+      <span
+        className={
+          active
+            ? "rounded-full bg-[rgba(201,162,39,0.14)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-secondary)]"
+            : "rounded-full bg-[rgba(15,42,68,0.06)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-muted)]"
+        }
+      >
+        {active ? "Enabled" : "Off"}
+      </span>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const activeRole = useWorkspaceStore((state) => state.activeRole);
@@ -35,43 +107,62 @@ export default function ProfilePage() {
   const tenantDisplayName =
     tenantContext.branding?.display_name || tenantContext.name;
   const sessionName = getDisplayNameFromEmail(sessionUser.email);
+  const initials = sessionName
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("");
 
   return (
-    <div className="page-shell space-y-8">
+    <div className="page-shell space-y-6">
       <PageHeader
         eyebrow="Profile"
-        title={sessionName}
-        description="Review the active membership, tenant posture, and session context that shape how this archive experience is resolved."
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="pill-outline">{roleLabels[activeRole]}</span>
-          <span className="pill-outline">{tenantDisplayName}</span>
-        </div>
-      </PageHeader>
+        title="Account overview"
+        description="Your archive access, role, and account settings in one place."
+      />
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Active role"
-          value={roleLabels[activeRole]}
-          detail="Current role inferred from tenant membership."
-        />
-        <StatCard
-          label="Tenant"
-          value={tenantContext.slug.toUpperCase()}
-          detail={tenantDisplayName}
-          tone="secondary"
-        />
-        <StatCard
-          label="Campus access"
-          value={tenantContext.policy?.campus_only ? "Enabled" : "Open"}
-          detail="Campus-only posture from tenant policy."
-        />
-        <StatCard
-          label="Invite only"
-          value={tenantContext.policy?.invite_only ? "Enabled" : "Disabled"}
-          detail="Tenant onboarding posture."
-          tone="neutral"
-        />
+      <section className="rounded-[1rem] border border-[rgba(15,42,68,0.08)] bg-white shadow-[0_20px_38px_rgba(0,21,42,0.05)]">
+        <div className="flex flex-col gap-5 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-[1rem] bg-[rgba(15,42,68,0.08)] font-serif text-[1.35rem] text-[color:var(--color-primary)]">
+              {initials || "U"}
+            </div>
+            <div className="space-y-2">
+              <div className="space-y-1">
+                <p className="font-serif text-[1.85rem] leading-none text-[color:var(--color-primary)]">
+                  {sessionName}
+                </p>
+                <p className="text-sm text-[color:var(--color-muted-foreground)]">
+                  {sessionUser.email}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="pill-outline">{roleLabels[activeRole]}</span>
+                <span className="pill-outline">{tenantDisplayName}</span>
+                <span className="pill-outline">
+                  {tenantContext.policy?.campus_only ? "Campus only" : "Open access"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[360px]">
+            <div className="rounded-[0.85rem] border border-[rgba(15,42,68,0.08)] bg-[rgba(247,249,251,0.9)] px-4 py-3">
+              <p className="muted-label">Membership</p>
+              <p className="mt-2 text-sm text-[color:var(--color-foreground)]">
+                {currentMembership?.status || "Unavailable"}
+              </p>
+            </div>
+            <div className="rounded-[0.85rem] border border-[rgba(15,42,68,0.08)] bg-[rgba(247,249,251,0.9)] px-4 py-3">
+              <p className="muted-label">Joined</p>
+              <p className="mt-2 text-sm text-[color:var(--color-foreground)]">
+                {currentMembership
+                  ? formatDateTime(currentMembership.created_at)
+                  : "Unavailable"}
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {membershipsQuery.error ? (
@@ -81,57 +172,33 @@ export default function ProfilePage() {
         />
       ) : null}
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <SurfaceCard eyebrow="Identity" title="Session profile">
-            <dl className="space-y-4">
-              {[
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="space-y-5">
+          <ProfileCard
+            title="Account details"
+            description="Basic information tied to your signed-in archive account."
+          >
+            <DetailList
+              rows={[
                 { label: "Display name", value: sessionName },
                 { label: "Email", value: sessionUser.email },
                 { label: "Role", value: roleLabels[activeRole] },
                 { label: "User ID", value: sessionUser.id },
-              ].map((row) => (
-                <div key={row.label}>
-                  <dt className="text-primary-label">{row.label}</dt>
-                  <dd className="text-muted mt-1 break-all">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </SurfaceCard>
+              ]}
+            />
+          </ProfileCard>
 
-          <SurfaceCard eyebrow="Membership" title="Tenant context">
-            {currentMembership ? (
-              <dl className="space-y-4">
-                {[
-                  { label: "Membership ID", value: currentMembership.id },
-                  { label: "Status", value: currentMembership.status },
-                  {
-                    label: "Granted at",
-                    value: formatDateTime(currentMembership.created_at),
-                  },
-                  { label: "Tenant", value: tenantDisplayName },
-                ].map((row) => (
-                  <div key={row.label}>
-                    <dt className="text-primary-label">{row.label}</dt>
-                    <dd className="text-muted mt-1 break-all">{row.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <EmptyState
-                title="Membership not resolved"
-                description="The current backend login succeeded, but this user was not found in the tenant membership list."
-              />
-            )}
-          </SurfaceCard>
         </div>
 
-        <div className="space-y-6">
-          <SurfaceCard eyebrow="Security" title="Sign-in posture">
-            <dl className="space-y-4">
-              {[
+        <div className="space-y-5">
+          <ProfileCard
+            title="Security settings"
+            description="Policies that affect sign-in and access protection."
+          >
+            <DetailList
+              rows={[
                 {
-                  label: "Enforce email domains",
+                  label: "Email domain enforcement",
                   value: tenantContext.policy?.enforce_email_domains
                     ? "Enabled"
                     : "Disabled",
@@ -150,25 +217,9 @@ export default function ProfilePage() {
                   label: "Lockout period",
                   value: `${tenantContext.policy?.lockout_minutes || 0} minutes`,
                 },
-              ].map((row) => (
-                <div key={row.label}>
-                  <dt className="text-primary-label">{row.label}</dt>
-                  <dd className="text-muted mt-1">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </SurfaceCard>
-
-          <div className="inline-note">
-            <p className="text-primary-label">Tenant stance</p>
-            <p className="mt-2 font-serif text-[1.45rem] leading-tight text-[color:var(--color-primary)]">
-              {tenantContext.policy?.campus_only ? "Campus-only archive" : "Open tenant archive"}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[color:var(--color-muted-foreground)]">
-              Access controls, invite rules, and remembered device support are all
-              inherited from the active tenant policy.
-            </p>
-          </div>
+              ]}
+            />
+          </ProfileCard>
         </div>
       </section>
     </div>

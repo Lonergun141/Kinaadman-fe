@@ -8,6 +8,7 @@ export const routeAccess = [
   { href: "/profile", roles: allRoles },
   { href: "/workspace", roles: ["STUDENT"] },
   { href: "/review", roles: ["ADVISER", "LIBRARIAN"] },
+  { href: "/audit", roles: ["LIBRARIAN", "TENANT_ADMIN"] },
   { href: "/admin/users", roles: ["TENANT_ADMIN"] },
   { href: "/admin/branding", roles: ["TENANT_ADMIN"] },
   { href: "/admin/policy", roles: ["TENANT_ADMIN"] },

@@ -3,26 +3,55 @@
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatCard } from "@/components/ui/stat-card";
-import { SurfaceCard } from "@/components/ui/surface-card";
-import { TabPanels } from "@/components/ui/tab-panels";
 import { getDisplayNameFromEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
-import { useTenantStore } from "@/stores/tenant-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
-import { SubmissionChecklistCard } from "./components/submission-checklist-card";
 import { WorkspaceEditor } from "./components/workspace-editor";
-import { WorkspaceQueueCard } from "./components/workspace-queue-card";
-import { WorkspaceTimelineCard } from "./components/workspace-timeline-card";
+import { WorkspaceRecordsTable } from "./components/workspace-records-table";
+import { WorkspaceRecordSetupPanel } from "./components/workspace-record-setup-panel";
+import { WorkspaceSubmissionPanel } from "./components/workspace-submission-panel";
+import { WorkspaceUploadPanel } from "./components/workspace-upload-panel";
 import { useWorkspaceData } from "./hooks/use-workspace-data";
-import { getWorkspaceStats } from "./utils";
+
+type WorkspaceStage = "create" | "details" | "files" | "submit";
+
+const stageItems: Array<{
+  id: WorkspaceStage;
+  step: string;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: "create",
+    step: "Stage 1",
+    label: "Create record",
+    description: "Start the thesis record with the title and archive year.",
+  },
+  {
+    id: "details",
+    step: "Stage 2",
+    label: "Academic details",
+    description: "Complete the department, program, adviser, and abstract.",
+  },
+  {
+    id: "files",
+    step: "Stage 3",
+    label: "Upload files",
+    description: "Prepare the main PDF and any supporting attachments.",
+  },
+  {
+    id: "submit",
+    step: "Stage 4",
+    label: "Review and submit",
+    description: "Confirm the checklist and send the thesis into review.",
+  },
+];
 
 export function WorkspacePageView() {
   const activeTenantId = useWorkspaceStore((state) => state.activeTenantId);
   const sessionUser = useAuthStore((state) => state.sessionUser);
-  const tenantContext = useTenantStore((state) => state.tenantContext);
   const [selectedId, setSelectedId] = useState("");
-  const [activeTabId, setActiveTabId] = useState("compose");
+  const [activeStage, setActiveStage] = useState<WorkspaceStage>("create");
 
   const {
     thesesQuery,
@@ -40,133 +69,170 @@ export function WorkspacePageView() {
     sessionUserId: sessionUser?.id,
   });
 
-  const { draftCount, submittedCount } = useMemo(
-    () => getWorkspaceStats(workspaceTheses),
-    [workspaceTheses],
-  );
   const sessionName = sessionUser
     ? getDisplayNameFromEmail(sessionUser.email)
     : "Campus member";
-  const tenantDisplayName =
-    tenantContext?.branding?.display_name || tenantContext?.name || "Tenant archive";
+  const latestWorkspaceTheses = useMemo(
+    () =>
+      [...workspaceTheses].sort(
+        (left, right) =>
+          new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime(),
+      ),
+    [workspaceTheses],
+  );
   const selectedThesis = selectedThesisQuery.data || null;
+  const stageUnlocked = {
+    create: true,
+    details: Boolean(resolvedSelectedId),
+    files: Boolean(resolvedSelectedId),
+    submit: Boolean(resolvedSelectedId),
+  };
+
+  function renderActiveStage() {
+    if (activeStage !== "create" && resolvedSelectedId && selectedThesisQuery.isPending) {
+      return (
+        <EmptyState
+          title="Loading record"
+          description="Opening the selected thesis so you can continue to the next stage."
+        />
+      );
+    }
+
+    switch (activeStage) {
+      case "create":
+        return (
+          <WorkspaceRecordSetupPanel
+            key={resolvedSelectedId || "new"}
+            activeTenantId={activeTenantId}
+            currentMembershipId={currentMembership?.id || null}
+            currentUserId={sessionUser?.id || null}
+            sessionName={sessionName}
+            selectedThesis={selectedThesis}
+            onCreated={(thesisId) => {
+              setSelectedId(thesisId);
+              setActiveStage("details");
+            }}
+            onContinue={() => setActiveStage("details")}
+            onStartNew={() => {
+              setSelectedId("");
+              setActiveStage("create");
+            }}
+          />
+        );
+      case "details":
+        return (
+          <WorkspaceEditor
+            key={resolvedSelectedId || "details-empty"}
+            activeTenantId={activeTenantId}
+            currentMembershipId={currentMembership?.id || null}
+            selectedThesis={selectedThesis}
+            departments={departmentsQuery.data ?? []}
+            programs={programsQuery.data ?? []}
+            adviserOptions={adviserOptions}
+            onSaved={() => setActiveStage("files")}
+            onReturnToCreate={() => setActiveStage("create")}
+          />
+        );
+      case "files":
+        return (
+          <WorkspaceUploadPanel
+            activeTenantId={activeTenantId}
+            thesis={selectedThesis}
+            isLoading={Boolean(resolvedSelectedId && selectedThesisQuery.isPending)}
+            onContinue={() => setActiveStage("submit")}
+            onReturnToEdit={() => setActiveStage("details")}
+          />
+        );
+      case "submit":
+        return (
+          <WorkspaceSubmissionPanel
+            activeTenantId={activeTenantId}
+            currentMembershipId={currentMembership?.id || null}
+            thesis={selectedThesis}
+            isLoading={Boolean(resolvedSelectedId && selectedThesisQuery.isPending)}
+            onBackToFiles={() => setActiveStage("files")}
+          />
+        );
+      default:
+        return null;
+    }
+  }
 
   return (
-    <div className="page-shell space-y-8">
+    <div className="page-shell workspace-page-shell space-y-5">
       <PageHeader
         eyebrow="Student workspace"
-        title="Draft desk and submission workflow"
-        description="Create your thesis record, refine its metadata, and submit it for review through a student-owned workflow."
-      >
-        <span className="pill-outline">Signed in as {sessionName}</span>
-        <span className="pill-outline">{tenantDisplayName}</span>
-      </PageHeader>
+        description="Finish the thesis one stage at a time."
+      />
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="My records"
-          value={String(workspaceTheses.length)}
-          detail="Thesis and capstone records where you are already an author."
-        />
-        <StatCard
-          label="Drafts"
-          value={String(draftCount)}
-          detail="Entries still editable before review submission."
-          tone="secondary"
-        />
-        <StatCard
-          label="In workflow"
-          value={String(submittedCount)}
-          detail="Records already moving through review states."
-        />
-        <StatCard
-          label="Tenant"
-          value={tenantContext?.slug.toUpperCase() || "N/A"}
-          detail={tenantDisplayName}
-          tone="neutral"
-        />
+      <section className="space-y-3">
+        <div className="space-y-1">
+          <p className="muted-label">Workflow</p>
+          <h2 className="text-[1.55rem] leading-tight">Create, complete, upload, submit</h2>
+        </div>
+
+        <div className="workspace-stage-shell rounded-[0.95rem] bg-[rgba(255,255,255,0.38)] shadow-[inset_0_0_0_1px_rgba(15,42,68,0.05)] backdrop-blur-[18px]">
+          <div className="grid gap-0 bg-[rgba(255,255,255,0.3)] md:grid-cols-4">
+              {stageItems.map((stage) => {
+                const active = stage.id === activeStage;
+                const disabled = !stageUnlocked[stage.id];
+
+                return (
+                  <button
+                    key={stage.id}
+                    type="button"
+                    title={stage.description}
+                    disabled={disabled}
+                    onClick={() => setActiveStage(stage.id)}
+                    className={`group relative px-4 py-3 text-left transition-all lg:px-5 lg:py-4 ${
+                      active
+                        ? "bg-[rgba(255,255,255,0.42)] shadow-[inset_0_-2px_0_var(--color-secondary)]"
+                        : "bg-transparent hover:bg-[rgba(15,42,68,0.03)]"
+                    } ${disabled ? "cursor-not-allowed opacity-45" : ""}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]">
+                          {stage.step}
+                        </p>
+                        <p className="font-serif text-[1.08rem] leading-tight text-[color:var(--color-primary)]">
+                          {stage.label}
+                        </p>
+                      </div>
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(15,42,68,0.05)] text-[11px] font-semibold text-[color:var(--color-muted)]">
+                        i
+                      </span>
+                    </div>
+                    {!disabled ? (
+                      <span className="workspace-stage-tooltip group-hover:block group-focus-visible:block">
+                        {stage.description}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+          </div>
+
+          <div className="workspace-stage-canvas">{renderActiveStage()}</div>
+        </div>
       </section>
 
-      <SurfaceCard
-        eyebrow="Workspace tasks"
-        title="Move through drafting, editing, and submission in focused tabs"
-        className="xl:px-10 xl:py-9"
-      >
-        <div className="space-y-6">
-          <p className="max-w-3xl text-base leading-8 text-[color:var(--color-muted-foreground)]">
-            The workspace follows the documented student flow: manage only your own
-            thesis records, complete the academic metadata, review submission
-            requirements, and track status once the draft enters review.
-          </p>
-
-          <TabPanels
-            activeTabId={activeTabId}
-            onTabChange={setActiveTabId}
-            tabsClassName="w-full justify-start"
-            tabs={[
-              {
-                id: "drafts",
-                label: "My records",
-                description:
-                  "Open a thesis or capstone record that already lists you as an author, then continue editing.",
-                content: (
-                  <WorkspaceQueueCard
-                    embedded
-                    theses={workspaceTheses}
-                    selectedId={resolvedSelectedId}
-                    errorMessage={thesesQuery.error?.message}
-                    onSelect={(thesisId) => {
-                      setSelectedId(thesisId);
-                      setActiveTabId("compose");
-                    }}
-                  />
-                ),
-              },
-              {
-                id: "compose",
-                label: resolvedSelectedId ? "Edit draft" : "New draft",
-                description:
-                  "Capture the thesis metadata, abstract, and adviser details in one dedicated authoring tab.",
-                content: resolvedSelectedId && selectedThesisQuery.isPending ? (
-                  <EmptyState
-                    title="Loading draft"
-                    description="The frontend is fetching the selected thesis detail from the backend."
-                  />
-                ) : (
-                  <WorkspaceEditor
-                    key={resolvedSelectedId || "new"}
-                    activeTenantId={activeTenantId}
-                    currentMembershipId={currentMembership?.id || null}
-                    currentUserId={sessionUser?.id || null}
-                    sessionName={sessionName}
-                    selectedThesis={selectedThesis}
-                    departments={departmentsQuery.data ?? []}
-                    programs={programsQuery.data ?? []}
-                    adviserOptions={adviserOptions}
-                    onCreated={setSelectedId}
-                  />
-                ),
-              },
-              {
-                id: "checklist",
-                label: "Checklist",
-                description:
-                  "Review the documented submission steps before moving your record into review.",
-                content: <SubmissionChecklistCard embedded />,
-              },
-              {
-                id: "activity",
-                label: "Activity",
-                description:
-                  "Check the latest status changes and workflow milestones for the current draft.",
-                content: (
-                  <WorkspaceTimelineCard thesis={selectedThesis} embedded />
-                ),
-              },
-            ]}
-          />
+      <section className="space-y-3">
+        <div className="space-y-1">
+          <p className="muted-label">My records</p>
+          <h2 className="text-[1.55rem] leading-tight">Latest thesis and capstone records</h2>
         </div>
-      </SurfaceCard>
+
+        <WorkspaceRecordsTable
+          theses={latestWorkspaceTheses}
+          selectedId={resolvedSelectedId}
+          errorMessage={thesesQuery.error?.message}
+          onSelect={(thesisId) => {
+            setSelectedId(thesisId);
+            setActiveStage("details");
+          }}
+        />
+      </section>
     </div>
   );
 }

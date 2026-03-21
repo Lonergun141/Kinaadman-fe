@@ -2,6 +2,6 @@
 
 import { AuditLogPageView } from "@/features/audit/audit-log-page";
 
-export default function AdminAuditPage() {
+export default function AuditPage() {
   return <AuditLogPageView />;
 }

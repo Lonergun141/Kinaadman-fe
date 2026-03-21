@@ -20,7 +20,7 @@ export const navigation: NavItem[] = [
     href: "/profile",
     label: "Profile",
     section: "Common",
-    description: "Review your tenant membership and session posture.",
+    description: "See your account details and archive access settings.",
     roles: ["STUDENT", "ADVISER", "LIBRARIAN", "TENANT_ADMIN"],
   },
   {
@@ -38,10 +38,17 @@ export const navigation: NavItem[] = [
     roles: ["ADVISER", "LIBRARIAN"],
   },
   {
+    href: "/audit",
+    label: "Audit Log",
+    section: "Review",
+    description: "Trace repository decisions, publishing actions, and archive changes.",
+    roles: ["LIBRARIAN", "TENANT_ADMIN"],
+  },
+  {
     href: "/admin/users",
     label: "Users",
     section: "Administration",
-    description: "Manage memberships and send invite links.",
+    description: "Manage people, roles, and invitations for the archive.",
     roles: ["TENANT_ADMIN"],
   },
   {
@@ -55,14 +62,7 @@ export const navigation: NavItem[] = [
     href: "/admin/policy",
     label: "Policy",
     section: "Administration",
-    description: "Configure access, security, departments, and programs.",
-    roles: ["TENANT_ADMIN"],
-  },
-  {
-    href: "/admin/audit",
-    label: "Audit",
-    section: "Administration",
-    description: "Inspect recent tenant activity and system events.",
+    description: "Set archive access, departments, programs, and review rules.",
     roles: ["TENANT_ADMIN"],
   },
 ];
