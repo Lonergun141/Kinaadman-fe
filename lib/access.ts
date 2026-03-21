@@ -1,6 +1,12 @@
 import type { AppRole } from "@/stores/workspace-store";
 
-const allRoles: AppRole[] = ["STUDENT", "ADVISER", "LIBRARIAN", "TENANT_ADMIN"];
+const allRoles: AppRole[] = [
+  "STUDENT",
+  "ADVISER",
+  "LIBRARIAN",
+  "TENANT_ADMIN",
+  "SUPER_ADMIN",
+];
 
 export const routeAccess = [
   { href: "/repository", roles: allRoles },
@@ -8,11 +14,12 @@ export const routeAccess = [
   { href: "/profile", roles: allRoles },
   { href: "/workspace", roles: ["STUDENT"] },
   { href: "/review", roles: ["ADVISER", "LIBRARIAN"] },
-  { href: "/audit", roles: ["LIBRARIAN", "TENANT_ADMIN"] },
-  { href: "/admin/users", roles: ["TENANT_ADMIN"] },
-  { href: "/admin/branding", roles: ["TENANT_ADMIN"] },
-  { href: "/admin/policy", roles: ["TENANT_ADMIN"] },
-  { href: "/admin/audit", roles: ["TENANT_ADMIN"] },
+  { href: "/audit", roles: ["LIBRARIAN", "TENANT_ADMIN", "SUPER_ADMIN"] },
+  { href: "/analytics", roles: ["LIBRARIAN", "TENANT_ADMIN"] },
+  { href: "/admin/users", roles: ["TENANT_ADMIN", "SUPER_ADMIN"] },
+  { href: "/admin/branding", roles: ["TENANT_ADMIN", "SUPER_ADMIN"] },
+  { href: "/admin/policy", roles: ["TENANT_ADMIN", "SUPER_ADMIN"] },
+  { href: "/admin/audit", roles: ["TENANT_ADMIN", "SUPER_ADMIN"] },
   { href: "/login", roles: allRoles },
   { href: "/invite", roles: allRoles },
 ];
@@ -26,6 +33,8 @@ export function getDefaultRouteForRole(role: AppRole) {
       return "/review";
     case "TENANT_ADMIN":
       return "/admin/users";
+    case "SUPER_ADMIN":
+      return "/repository";
     default:
       return "/login";
   }

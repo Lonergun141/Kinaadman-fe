@@ -59,7 +59,7 @@ export function ReviewFocusCard({
         </span>
       </div>
 
-      <div className="inline-note">
+      <div className="border-l-2 border-[rgba(201,162,39,0.4)] pl-4">
         <p className="text-primary-label">Abstract preview</p>
         <p className="mt-3 text-sm leading-7 text-[color:var(--color-muted-foreground)]">
           {thesis.abstract}

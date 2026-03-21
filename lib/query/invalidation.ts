@@ -37,6 +37,29 @@ export async function invalidateMembershipsQuery(
   });
 }
 
+export async function invalidateInvitationsQuery(
+  queryClient: QueryClient,
+  tenantId: string,
+) {
+  await queryClient.invalidateQueries({
+    queryKey: queryKeys.users.invites(tenantId),
+  });
+}
+
+export async function invalidateTenantSettingsQueries(
+  queryClient: QueryClient,
+  tenantId: string,
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.tenant.emailDomains(tenantId),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.tenant.hostAliases(tenantId),
+    }),
+  ]);
+}
+
 export async function invalidateAuditQuery(
   queryClient: QueryClient,
   tenantId: string,

@@ -5,4 +5,5 @@ export const roleLabels: Record<AppRole, string> = {
   ADVISER: "Adviser",
   LIBRARIAN: "Librarian",
   TENANT_ADMIN: "Tenant Admin",
+  SUPER_ADMIN: "Super Admin",
 };

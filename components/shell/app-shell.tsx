@@ -182,6 +182,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="archive-grid relative h-screen overflow-hidden">
       <TenantThemeSync tenantContext={tenantContext} />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-8rem] top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-[rgba(201,162,39,0.12)] blur-3xl animate-[ambient-float_18s_ease-in-out_infinite]" />
+        <div className="absolute right-[-9rem] top-[9rem] h-[22rem] w-[22rem] rounded-full bg-[rgba(15,42,68,0.08)] blur-3xl animate-[ambient-float_22s_ease-in-out_infinite_reverse]" />
+        <div className="absolute bottom-[-8rem] left-[18%] h-[18rem] w-[18rem] rounded-full bg-[rgba(15,42,68,0.06)] blur-3xl animate-[ambient-float_20s_ease-in-out_infinite]" />
+      </div>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[color:var(--color-primary)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
@@ -209,7 +214,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
         ) : null}
 
-        <div className="relative flex h-full min-h-0 min-w-0 flex-col overflow-y-auto bg-[color:var(--color-background)]">
+        <div className="relative flex h-full min-h-0 min-w-0 flex-col overflow-y-auto bg-[color:var(--color-background)]/80">
           <TopBar
             railId={railId}
             sidebarOpen={sidebarOpen}

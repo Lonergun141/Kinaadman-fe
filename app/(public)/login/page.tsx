@@ -77,7 +77,7 @@ export default function LoginPage() {
               Access your archive
             </h2>
             <p className="text-sm text-muted-foreground mt-3">
-              Use your campus email, password, and archive ID to open the right repository.
+              Use your campus email, password, and archive ID to open the right repository. Super admins can switch clients after sign-in.
             </p>
           </div>
 

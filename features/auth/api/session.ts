@@ -1,19 +1,17 @@
 "use client";
 
 import { clearClientSession, mapTokens, requestJson } from "@/lib/api/client";
+import { isAppRole } from "@/lib/access";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTenantStore } from "@/stores/tenant-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import type { LoginResponseDto, TenantMembershipDto } from "@/types/api";
 import type { SessionUser } from "@/types/domain";
-import { resolveMembership } from "./helpers";
 import { bootstrapTenant } from "./tenant";
 
 export async function listMemberships(tenantId: string) {
   return requestJson<TenantMembershipDto[]>("/users/memberships", {
     tenantId,
-    auth: false,
-    allowRefresh: false,
   });
 }
 
@@ -36,17 +34,16 @@ export async function loginWithBackend(payload: {
     });
 
     const tokens = mapTokens(loginResponse.tokens);
-    const [tenantContext, memberships] = await Promise.all([
-      bootstrapTenant(payload.tenantId),
-      listMemberships(payload.tenantId),
-    ]);
-
-    const membership = resolveMembership(memberships, loginResponse.user.email);
+    const tenantContext = await bootstrapTenant(payload.tenantId);
+    if (!isAppRole(loginResponse.user.role)) {
+      throw new Error("No supported tenant membership was found for this account.");
+    }
     const sessionUser: SessionUser = {
       id: loginResponse.user.id,
       email: loginResponse.user.email,
-      role: membership.role,
-      membershipId: membership.membershipId,
+      role: loginResponse.user.role,
+      membershipId: loginResponse.user.membership_id,
+      isSuperAdmin: loginResponse.user.is_super_admin,
     };
 
     useAuthStore.getState().setSession({
@@ -55,7 +52,7 @@ export async function loginWithBackend(payload: {
       tenantId: payload.tenantId,
     });
     useTenantStore.getState().setTenantContext(tenantContext);
-    useWorkspaceStore.getState().setActiveRole(membership.role);
+    useWorkspaceStore.getState().setActiveRole(loginResponse.user.role);
     useWorkspaceStore.getState().setActiveTenantId(payload.tenantId);
 
     return {

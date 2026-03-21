@@ -5,6 +5,7 @@ export {
   createDepartment,
   createProgram,
   createThesis,
+  getRepositoryAnalyticsOverview,
   getPublicCitations,
   getPublicThesis,
   getThesis,

@@ -1,40 +1,75 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { TabPanels } from "@/components/ui/tab-panels";
-import { sendInvitation } from "@/features/admin/api";
+import {
+  listInvitations,
+  sendInvitation,
+  updateTenantMembership,
+} from "@/features/admin/api";
 import { useTenantMembershipsQuery } from "@/features/admin/hooks/use-tenant-memberships-query";
+import {
+  invalidateInvitationsQuery,
+  invalidateMembershipsQuery,
+} from "@/lib/query/invalidation";
+import { queryKeys } from "@/lib/query-keys";
 import { useWorkspaceStore, type AppRole } from "@/stores/workspace-store";
 import { InviteFormCard } from "./components/invite-form-card";
 import { MembershipRosterCard } from "./components/membership-roster-card";
 import { RecentInvitesCard } from "./components/recent-invites-card";
-import { getUserManagementStats, type SessionInvite } from "./utils";
+import {
+  getInviteStatus,
+  getUserManagementStats,
+  mergeInvites,
+  type SessionInvite,
+} from "./utils";
 
 export function AdminUsersPageView() {
+  const queryClient = useQueryClient();
   const activeTenantId = useWorkspaceStore((state) => state.activeTenantId);
   const membershipsQuery = useTenantMembershipsQuery(activeTenantId);
+  const invitesQuery = useQuery({
+    queryKey: queryKeys.users.invites(activeTenantId),
+    queryFn: () => listInvitations(activeTenantId),
+    enabled: Boolean(activeTenantId),
+  });
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AppRole>("STUDENT");
   const [sentInvites, setSentInvites] = useState<SessionInvite[]>([]);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [activeTabId, setActiveTabId] = useState("roster");
 
   const inviteMutation = useMutation({
     mutationFn: sendInvitation,
-    onSuccess: (invite) => {
+    onSuccess: async (invite) => {
       setSentInvites((current) => [invite, ...current].slice(0, 5));
       setEmail("");
+      setActiveTabId("invites");
       setInviteModalOpen(false);
+      await invalidateInvitationsQuery(queryClient, activeTenantId);
+    },
+  });
+
+  const membershipMutation = useMutation({
+    mutationFn: updateTenantMembership,
+    onSuccess: async () => {
+      await invalidateMembershipsQuery(queryClient, activeTenantId);
     },
   });
 
   const members = membershipsQuery.data ?? [];
+  const invites = useMemo(
+    () => mergeInvites(invitesQuery.data ?? [], sentInvites),
+    [invitesQuery.data, sentInvites],
+  );
   const { activeCount, roleCount } = getUserManagementStats(members);
+  const pendingInviteCount = invites.filter((invite) => getInviteStatus(invite) === "Pending").length;
 
   return (
     <div className="page-shell space-y-8">
@@ -60,9 +95,9 @@ export function AdminUsersPageView() {
           tone="secondary"
         />
         <StatCard
-          label="Session invites"
-          value={String(sentInvites.length)}
-          detail="Invitations created during this visit."
+          label="Pending invites"
+          value={String(pendingInviteCount)}
+          detail="Outstanding invitations that still need to be accepted."
         />
         <StatCard
           label="Archive access"
@@ -73,6 +108,8 @@ export function AdminUsersPageView() {
       </section>
 
       <TabPanels
+        activeTabId={activeTabId}
+        onTabChange={setActiveTabId}
         tabs={[
           {
             id: "roster",
@@ -83,6 +120,16 @@ export function AdminUsersPageView() {
               <MembershipRosterCard
                 memberships={members}
                 errorMessage={membershipsQuery.error?.message}
+                isSaving={membershipMutation.isPending}
+                savingMembershipId={membershipMutation.variables?.membershipId}
+                onSaveMembership={({ membershipId, role, status }) =>
+                  membershipMutation.mutate({
+                    tenantId: activeTenantId,
+                    membershipId,
+                    role,
+                    status,
+                  })
+                }
               />
             ),
           },
@@ -91,7 +138,12 @@ export function AdminUsersPageView() {
             label: "Recent invites",
             description:
               "Recently created invitations stay close at hand without taking over the main page.",
-            content: <RecentInvitesCard sentInvites={sentInvites} />,
+            content: (
+              <RecentInvitesCard
+                invites={invites}
+                errorMessage={invitesQuery.error?.message}
+              />
+            ),
           },
         ]}
       />

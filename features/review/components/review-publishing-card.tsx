@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { PublicationReadinessCard } from "@/components/repository/publication-readiness-card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SelectField } from "@/components/ui/select-field";
@@ -19,6 +20,12 @@ const VISIBILITY_OPTIONS = [
   { value: "CAMPUS_ONLY", label: "Campus only" },
   { value: "PUBLIC", label: "Public" },
   { value: "EMBARGOED", label: "Embargoed" },
+] as const;
+
+const PANEL_APPROVAL_OPTIONS = [
+  { value: "PENDING", label: "Pending evidence" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "REJECTED", label: "Rejected" },
 ] as const;
 
 interface ReviewPublishingCardProps {
@@ -48,6 +55,13 @@ function getPublishLabel(visibility: string) {
   }
 }
 
+function normalizePanelMembers(value: string) {
+  return value
+    .split(/\r?\n|,/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
 export function ReviewPublishingCard({
   activeTenantId,
   currentMembershipId,
@@ -66,13 +80,64 @@ export function ReviewPublishingCard({
   const [embargoUntil, setEmbargoUntil] = useState(thesis?.embargo_until || "");
   const [rightsLicense, setRightsLicense] = useState(thesis?.rights_license || "");
   const [publicSlug, setPublicSlug] = useState(thesis?.public_slug || "");
+  const [defenseDate, setDefenseDate] = useState(thesis?.defense_date || "");
+  const [panelMembers, setPanelMembers] = useState(
+    thesis?.panel_members.join("\n") || "",
+  );
+  const [panelApprovalStatus, setPanelApprovalStatus] = useState(
+    thesis?.panel_approval_status || "PENDING",
+  );
+  const [panelApprovalNote, setPanelApprovalNote] = useState(
+    thesis?.panel_approval_note || "",
+  );
 
   useEffect(() => {
     setVisibility(thesis?.visibility || "PRIVATE");
     setEmbargoUntil(thesis?.embargo_until || "");
     setRightsLicense(thesis?.rights_license || "");
     setPublicSlug(thesis?.public_slug || "");
-  }, [thesis?.embargo_until, thesis?.id, thesis?.public_slug, thesis?.rights_license, thesis?.visibility]);
+    setDefenseDate(thesis?.defense_date || "");
+    setPanelMembers(thesis?.panel_members.join("\n") || "");
+    setPanelApprovalStatus(thesis?.panel_approval_status || "PENDING");
+    setPanelApprovalNote(thesis?.panel_approval_note || "");
+  }, [
+    thesis?.defense_date,
+    thesis?.embargo_until,
+    thesis?.id,
+    thesis?.panel_approval_note,
+    thesis?.panel_approval_status,
+    thesis?.panel_members,
+    thesis?.public_slug,
+    thesis?.rights_license,
+    thesis?.visibility,
+  ]);
+
+  const hasUnsavedChecklistChanges = useMemo(() => {
+    if (!thesis) {
+      return false;
+    }
+
+    return (
+      visibility !== thesis.visibility ||
+      embargoUntil !== (thesis.embargo_until || "") ||
+      rightsLicense !== thesis.rights_license ||
+      publicSlug !== thesis.public_slug ||
+      defenseDate !== (thesis.defense_date || "") ||
+      panelMembers !== thesis.panel_members.join("\n") ||
+      panelApprovalStatus !== thesis.panel_approval_status ||
+      panelApprovalNote !== thesis.panel_approval_note
+    );
+  }, [
+    defenseDate,
+    embargoUntil,
+    panelApprovalNote,
+    panelApprovalStatus,
+    panelMembers,
+    publicSlug,
+    rightsLicense,
+    thesis,
+    visibility,
+  ]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -92,6 +157,10 @@ export function ReviewPublishingCard({
         visibility,
         rightsLicense,
         publicSlug,
+        defenseDate: defenseDate || null,
+        panelMembers: normalizePanelMembers(panelMembers),
+        panelApprovalStatus,
+        panelApprovalNote,
         embargoUntil: visibility === "EMBARGOED" ? embargoUntil || null : null,
       });
     },
@@ -107,22 +176,6 @@ export function ReviewPublishingCard({
     },
   });
 
-  const canPublish = useMemo(() => {
-    if (!thesis) {
-      return false;
-    }
-
-    if (thesis.status !== "APPROVED") {
-      return false;
-    }
-
-    if (visibility === "EMBARGOED" && !embargoUntil) {
-      return false;
-    }
-
-    return true;
-  }, [embargoUntil, thesis, visibility]);
-
   if (!thesis) {
     return (
       <EmptyState
@@ -134,12 +187,73 @@ export function ReviewPublishingCard({
 
   return (
     <div className="space-y-6">
-      <section className="workspace-form-section space-y-5">
+      <PublicationReadinessCard readiness={thesis.publication_readiness} embedded />
+
+      <section className="space-y-5 border-t border-[rgba(15,42,68,0.08)] pt-6">
         <div className="space-y-2">
-          <p className="muted-label">Publishing</p>
-          <h2 className="text-[1.7rem] leading-tight">Access and publishing controls</h2>
+          <p className="muted-label">Clearance records</p>
+          <h2 className="text-[1.7rem] leading-tight">Publishing checklist editor</h2>
           <p className="text-sm leading-6 text-[color:var(--color-muted-foreground)]">
-            Set how this record should be exposed in the repository before you publish or archive it.
+            Record the institutional evidence librarians need before a thesis or
+            capstone moves into publication.
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <SelectField
+            label="Panel approval"
+            value={panelApprovalStatus}
+            className="workspace-field"
+            onChange={(event) => setPanelApprovalStatus(event.target.value)}
+          >
+            {PANEL_APPROVAL_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </SelectField>
+
+          <TextInput
+            label="Defense date"
+            type="date"
+            value={defenseDate}
+            className="workspace-field"
+            hint="Record the defense date used for repository clearance."
+            onChange={(event) => setDefenseDate(event.target.value)}
+          />
+        </div>
+
+        <label className="flex flex-col gap-2.5">
+          <span className="text-primary-label">Panel members</span>
+          <textarea
+            value={panelMembers}
+            onChange={(event) => setPanelMembers(event.target.value)}
+            className="input-base min-h-32 resize-y"
+            placeholder="Enter one panel member per line."
+          />
+          <span className="text-xs leading-6 text-[color:var(--color-muted)]">
+            One member per line is easiest to review later.
+          </span>
+        </label>
+
+        <label className="flex flex-col gap-2.5">
+          <span className="text-primary-label">Panel approval note</span>
+          <textarea
+            value={panelApprovalNote}
+            onChange={(event) => setPanelApprovalNote(event.target.value)}
+            className="input-base min-h-28 resize-y"
+            placeholder="Capture the panel decision, conditions, or reference number for the librarian record."
+          />
+        </label>
+      </section>
+
+      <section className="space-y-5 border-t border-[rgba(15,42,68,0.08)] pt-6">
+        <div className="space-y-2">
+          <p className="muted-label">Repository access</p>
+          <h2 className="text-[1.7rem] leading-tight">Publication settings</h2>
+          <p className="text-sm leading-6 text-[color:var(--color-muted-foreground)]">
+            Finalize the repository-facing fields that control how the published
+            record will be exposed.
           </p>
         </div>
 
@@ -206,40 +320,27 @@ export function ReviewPublishingCard({
         ) : null}
       </section>
 
-      <section className="workspace-form-section space-y-4">
+      <section className="space-y-4 border-t border-[rgba(15,42,68,0.08)] pt-6">
         <p className="text-primary-label">Current repository state</p>
         <p className="font-serif text-[1.65rem] leading-tight text-[color:var(--color-primary)]">
           {toTitleCase(thesis.status)}
         </p>
         <p className="text-sm leading-6 text-[color:var(--color-muted-foreground)]">
           {thesis.status === "APPROVED"
-            ? "This record is ready for publishing."
+            ? "Approval is complete. Save any checklist edits, then publish when the blockers reach zero."
             : thesis.status === "PUBLISHED"
               ? "This record is already published and can be reverted or archived."
-              : "Review and approval must be completed before publishing."}
+              : "Review and approval still need to complete before publishing is allowed."}
         </p>
-
-        <dl className="grid gap-4 md:grid-cols-2">
-          <div>
-            <dt className="text-primary-label">Visibility</dt>
-            <dd className="text-muted mt-1">{toTitleCase(visibility)}</dd>
-          </div>
-          <div>
-            <dt className="text-primary-label">Embargo</dt>
-            <dd className="text-muted mt-1">
-              {visibility === "EMBARGOED" && embargoUntil ? embargoUntil : "Not set"}
-            </dd>
-          </div>
-        </dl>
 
         <div className="flex flex-wrap gap-3">
           <Button
             variant="secondary"
             size="sm"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
+            disabled={saveMutation.isPending || !hasUnsavedChecklistChanges}
           >
-            {saveMutation.isPending ? "Saving..." : "Save access settings"}
+            {saveMutation.isPending ? "Saving..." : "Save checklist updates"}
           </Button>
 
           {thesis.status === "PUBLISHED" ? (
@@ -254,7 +355,11 @@ export function ReviewPublishingCard({
             <Button
               size="sm"
               onClick={onPublish}
-              disabled={!canPublish || isPublishPending}
+              disabled={
+                isPublishPending ||
+                hasUnsavedChecklistChanges ||
+                !thesis.publication_readiness.can_publish_now
+              }
             >
               {isPublishPending ? "Publishing..." : getPublishLabel(visibility)}
             </Button>
@@ -269,6 +374,12 @@ export function ReviewPublishingCard({
             {isArchivePending ? "Archiving..." : "Archive record"}
           </Button>
         </div>
+
+        {hasUnsavedChecklistChanges ? (
+          <p className="text-xs uppercase tracking-[0.12em] text-[color:var(--color-muted)]">
+            Save checklist updates before publishing.
+          </p>
+        ) : null}
       </section>
     </div>
   );

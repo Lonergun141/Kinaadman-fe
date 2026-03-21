@@ -18,7 +18,7 @@ interface TabPanelsProps {
   className?: string;
   tabsClassName?: string;
   panelClassName?: string;
-  variant?: "pill" | "grid";
+  variant?: "pill" | "grid" | "underline";
   showDescriptionsInTabs?: boolean;
 }
 
@@ -65,7 +65,9 @@ export function TabPanels({
         className={cx(
           variant === "grid"
             ? "grid gap-3 md:grid-cols-2 xl:grid-cols-4"
-            : "flex flex-wrap items-center gap-2 rounded-full bg-[rgba(15,42,68,0.04)] p-1",
+            : variant === "underline"
+              ? "flex flex-wrap items-center gap-5 border-b border-[rgba(15,42,68,0.1)]"
+              : "flex flex-wrap items-center gap-2 rounded-full bg-[rgba(15,42,68,0.04)] p-1",
           tabsClassName,
         )}
       >
@@ -84,7 +86,9 @@ export function TabPanels({
               className={cx(
                 variant === "grid"
                   ? "group flex min-h-[9.5rem] w-full flex-col justify-between rounded-[0.9rem] px-5 py-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(201,162,39,0.3)]"
-                  : "rounded-full px-4 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(201,162,39,0.24)]",
+                  : variant === "underline"
+                    ? "-mb-px border-b-2 px-0 pb-3 pt-1 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(201,162,39,0.24)]"
+                    : "rounded-full px-4 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(201,162,39,0.24)]",
                 variant === "grid" && active
                   ? "knowledge-gradient text-white shadow-[0_24px_36px_rgba(0,21,42,0.14)]"
                   : null,
@@ -96,6 +100,12 @@ export function TabPanels({
                   : null,
                 variant === "pill" && !active
                   ? "text-[color:var(--color-muted-foreground)] hover:bg-white/80 hover:text-[color:var(--color-primary)]"
+                  : null,
+                variant === "underline" && active
+                  ? "border-[color:var(--color-secondary)] text-[color:var(--color-primary)]"
+                  : null,
+                variant === "underline" && !active
+                  ? "border-transparent text-[color:var(--color-muted-foreground)] hover:border-[rgba(15,42,68,0.14)] hover:text-[color:var(--color-primary)]"
                   : null,
               )}
               onClick={() => {

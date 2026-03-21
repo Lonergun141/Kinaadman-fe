@@ -1,12 +1,9 @@
 "use client";
 
 import { forwardRef } from "react";
-import { roleLabels } from "@/lib/roles";
-import { getDisplayNameFromEmail, cx } from "@/lib/utils";
+import { cx } from "@/lib/utils";
 import type { AppRole } from "@/stores/workspace-store";
-import type { SessionUser, TenantContext } from "@/types/domain";
-import { Avatar } from "../ui/avatar";
-import { Button } from "../ui/button";
+import type { TenantContext } from "@/types/domain";
 import { SidebarNav } from "./sidebar-nav";
 
 interface SidebarProps {
@@ -24,14 +21,11 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
     railId,
     sidebarOpen,
     activeRole,
-    tenantContext,
+    tenantContext: _tenantContext,
     onNavigate,
   },
   ref,
 ) {
-  const tenantDisplayName =
-    tenantContext.branding?.display_name || tenantContext.name;
-
   return (
     <aside
       ref={ref}

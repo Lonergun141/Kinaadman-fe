@@ -1,6 +1,9 @@
 export const queryKeys = {
   tenant: {
     bootstrap: (tenantId: string) => ["tenant", "bootstrap", tenantId] as const,
+    emailDomains: (tenantId: string) => ["tenant", "email-domains", tenantId] as const,
+    hostAliases: (tenantId: string) => ["tenant", "host-aliases", tenantId] as const,
+    supervisionList: ["tenant", "supervision-list"] as const,
   },
   repository: {
     theses: (
@@ -64,6 +67,7 @@ export const queryKeys = {
   },
   users: {
     memberships: (tenantId: string) => ["users", "memberships", tenantId] as const,
+    invites: (tenantId: string) => ["users", "invites", tenantId] as const,
   },
   admin: {
     audit: (tenantId: string) => ["admin", "audit", tenantId] as const,

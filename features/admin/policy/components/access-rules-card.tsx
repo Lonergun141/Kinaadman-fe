@@ -50,11 +50,11 @@ export function AccessRulesCard({
           <option value="false">Disabled</option>
         </SelectField>
         <SelectField
-          label="Remember device"
-          value={booleanValue(policy.allow_remember_device)}
+          label="Enforce IP allowlist"
+          value={booleanValue(policy.enforce_ip_allowlist)}
           onChange={(event) =>
             onPolicyChange({
-              allow_remember_device: event.target.value === "true",
+              enforce_ip_allowlist: event.target.value === "true",
             })
           }
         >

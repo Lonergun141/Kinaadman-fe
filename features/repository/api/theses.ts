@@ -86,6 +86,8 @@ export async function createThesis(payload: {
   campusName?: string;
   rightsLicense?: string;
   panelMembers?: string[];
+  panelApprovalStatus?: string;
+  panelApprovalNote?: string;
   keywords?: string[];
   defenseDate?: string | null;
   embargoUntil?: string | null;
@@ -111,6 +113,8 @@ export async function createThesis(payload: {
       campus_name: payload.campusName || null,
       rights_license: payload.rightsLicense || null,
       panel_members: payload.panelMembers || [],
+      panel_approval_status: payload.panelApprovalStatus || null,
+      panel_approval_note: payload.panelApprovalNote || null,
       keywords: payload.keywords || [],
       defense_date: payload.defenseDate || null,
       embargo_until: payload.embargoUntil || null,
@@ -139,6 +143,8 @@ export async function updateThesis(payload: {
   campusName?: string;
   rightsLicense?: string;
   panelMembers?: string[];
+  panelApprovalStatus?: string;
+  panelApprovalNote?: string;
   keywords?: string[];
   defenseDate?: string | null;
   embargoUntil?: string | null;
@@ -171,6 +177,12 @@ export async function updateThesis(payload: {
         payload.rightsLicense === undefined ? undefined : payload.rightsLicense,
       panel_members:
         payload.panelMembers === undefined ? undefined : payload.panelMembers,
+      panel_approval_status:
+        payload.panelApprovalStatus === undefined
+          ? undefined
+          : payload.panelApprovalStatus,
+      panel_approval_note:
+        payload.panelApprovalNote === undefined ? undefined : payload.panelApprovalNote,
       keywords: payload.keywords === undefined ? undefined : payload.keywords,
       defense_date:
         payload.defenseDate === undefined ? undefined : payload.defenseDate || null,

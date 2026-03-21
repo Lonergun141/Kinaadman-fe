@@ -8,7 +8,8 @@ export type AppRole =
   | "STUDENT"
   | "ADVISER"
   | "LIBRARIAN"
-  | "TENANT_ADMIN";
+  | "TENANT_ADMIN"
+  | "SUPER_ADMIN";
 
 interface WorkspaceStoreState {
   activeRole: AppRole;

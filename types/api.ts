@@ -10,6 +10,8 @@ export interface LoginResponseDto {
     id: string;
     email: string;
     role: string;
+    membership_id: string | null;
+    is_super_admin: boolean;
   };
 }
 
@@ -44,6 +46,20 @@ export interface TenantContextDto {
   is_active: boolean;
   branding: TenantBrandingDto | null;
   policy: TenantPolicyDto | null;
+}
+
+export interface TenantEmailDomainDto {
+  id: string;
+  domain: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TenantHostAliasDto {
+  id: string;
+  hostname: string;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface DepartmentDto {
@@ -117,6 +133,29 @@ export interface ThesisMetadataVersionDto {
   created_at: string;
 }
 
+export interface PublicationReadinessCheckDto {
+  id: string;
+  label: string;
+  status: string;
+  detail: string;
+  blocking: boolean;
+}
+
+export interface PublicationReadinessDto {
+  can_publish_now: boolean;
+  readiness_score: number;
+  blocker_count: number;
+  blockers: string[];
+  adviser_recommendation_status: string;
+  adviser_review_decision: string | null;
+  adviser_recommendation_note: string | null;
+  adviser_recommendation_by: string | null;
+  adviser_recommendation_at: string | null;
+  panel_approval_status: string;
+  panel_approval_note: string | null;
+  checklist: PublicationReadinessCheckDto[];
+}
+
 export interface CitationExportDto {
   format: string;
   filename: string;
@@ -134,6 +173,46 @@ export interface PublicCollectionSummaryDto {
   departments: CollectionBucketDto[];
   programs: CollectionBucketDto[];
   years: CollectionBucketDto[];
+}
+
+export interface AnalyticsCountBucketDto {
+  label: string;
+  count: number;
+}
+
+export interface AnalyticsValueBucketDto {
+  label: string;
+  value: number;
+}
+
+export interface RepositoryAnalyticsMonthDto {
+  key: string;
+  month: string;
+  created: number;
+  submitted: number;
+  published: number;
+}
+
+export interface RepositoryAnalyticsSummaryDto {
+  total_records: number;
+  published_count: number;
+  active_workflow_count: number;
+  ready_count: number;
+  blocked_count: number;
+}
+
+export interface RepositoryAnalyticsOverviewDto {
+  as_of: string;
+  window_months: number;
+  summary: RepositoryAnalyticsSummaryDto;
+  monthly_activity: RepositoryAnalyticsMonthDto[];
+  status_data: AnalyticsCountBucketDto[];
+  department_data: AnalyticsCountBucketDto[];
+  active_department_data: AnalyticsCountBucketDto[];
+  visibility_data: AnalyticsValueBucketDto[];
+  blocker_data: AnalyticsCountBucketDto[];
+  pipeline_data: AnalyticsCountBucketDto[];
+  readiness_split: AnalyticsValueBucketDto[];
 }
 
 export interface ThesisListItemDto {
@@ -158,6 +237,7 @@ export interface ThesisListItemDto {
   updated_at: string;
   authors: ThesisAuthorDto[];
   keywords: KeywordDto[];
+  publication_readiness: PublicationReadinessDto;
   department?: DepartmentDto | null;
   program?: ProgramDto | null;
 }
@@ -168,6 +248,8 @@ export interface ThesisDetailDto extends ThesisListItemDto {
   advisers: ThesisAdviserDto[];
   rights_license: string;
   panel_members: string[];
+  panel_approval_status: string;
+  panel_approval_note: string;
   status_history: ThesisStatusHistoryDto[];
   reviews: ThesisReviewDto[];
   files: ThesisFileDto[];
@@ -203,6 +285,7 @@ export interface TenantMembershipDto {
   role: string;
   status: string;
   created_at: string;
+  updated_at: string;
   user: TenantMembershipUserDto;
 }
 
@@ -213,6 +296,7 @@ export interface InvitationDto {
   expires_at: string;
   accepted_at: string | null;
   created_at: string;
+  accept_url?: string | null;
 }
 
 export interface AuditLogDto {

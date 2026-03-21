@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { PublicationReadinessCard } from "@/components/repository/publication-readiness-card";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { FullScreenMessage } from "@/components/ui/full-screen-message";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -46,6 +47,30 @@ export default function ThesisDetailPage() {
 
     return `${authorLine}. ${thesis.title}. ${programLine}, ${thesis.year}.`;
   }, [thesis]);
+  const repositoryStatusRows = useMemo(
+    () => {
+      if (!thesis) {
+        return [];
+      }
+
+      return [
+        { label: "Visibility", value: toTitleCase(thesis.visibility) },
+        { label: "Type", value: toTitleCase(thesis.thesis_type) },
+        { label: "Public slug", value: renderValue(thesis.public_slug) },
+        {
+          label: "Embargo window",
+          value: thesis.embargo_until
+            ? `Until ${formatDate(thesis.embargo_until)}`
+            : thesis.visibility === "EMBARGOED"
+              ? "Embargo date not set"
+              : "Not embargoed",
+        },
+        { label: "Published", value: formatDateTime(thesis.published_at) },
+        { label: "Last updated", value: formatDateTime(thesis.updated_at) },
+      ];
+    },
+    [thesis],
+  );
 
   if (thesisQuery.isPending) {
     return (
@@ -83,7 +108,7 @@ export default function ThesisDetailPage() {
         ]}
       />
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="paper-panel p-7 sm:p-8 lg:p-10">
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -113,33 +138,82 @@ export default function ThesisDetailPage() {
           </div>
         </div>
 
-        <SurfaceCard eyebrow="Publishing" title="Repository status">
-          <dl className="space-y-4">
-            {[
-              { label: "Visibility", value: toTitleCase(thesis.visibility) },
-              { label: "Type", value: toTitleCase(thesis.thesis_type) },
-              { label: "Public slug", value: renderValue(thesis.public_slug) },
-              { label: "Embargo", value: thesis.embargo_until ? formatDate(thesis.embargo_until) : "Not set" },
-              { label: "Published", value: formatDateTime(thesis.published_at) },
-            ].map((row) => (
-              <div key={row.label}>
-                <dt className="text-primary-label">{row.label}</dt>
-                <dd className="text-muted mt-1">{row.value}</dd>
+        <div className="space-y-5 xl:sticky xl:top-28 xl:self-start">
+          <PublicationReadinessCard
+            readiness={thesis.publication_readiness}
+            title="Publication readiness"
+            eyebrow="Librarian checklist"
+            layout="sidebar"
+          />
+          <section className="paper-panel overflow-hidden p-0">
+            <div className="space-y-4 px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
+              <div className="space-y-2">
+                <p className="muted-label">Publishing</p>
+                <h2 className="text-[1.45rem] leading-tight font-medium tracking-[-0.025em] text-balance">
+                  Repository status
+                </h2>
+                <p className="text-sm leading-6 text-[color:var(--color-muted-foreground)]">
+                  Repository-facing values that control access, routing, and
+                  public exposure for this record.
+                </p>
               </div>
-            ))}
-          </dl>
-          {publicPath ? (
-            <div className="mt-5 border-t border-[rgba(15,42,68,0.08)] pt-5">
-              <p className="text-primary-label">Public URL</p>
-              <a
-                href={publicPath}
-                className="mt-2 block break-all text-sm leading-7 text-[color:var(--color-secondary)] transition-colors hover:text-[color:var(--color-primary)]"
-              >
-                {publicPath}
-              </a>
+
+              <div className="flex flex-wrap gap-2">
+                <StatusBadge status={thesis.status} />
+                <span className="pill-outline">{toTitleCase(thesis.visibility)}</span>
+                <span className="pill-outline">{toTitleCase(thesis.thesis_type)}</span>
+              </div>
             </div>
-          ) : null}
-        </SurfaceCard>
+
+            <dl className="border-t border-[rgba(15,42,68,0.08)]">
+              {repositoryStatusRows.map((row) => (
+                <div
+                  key={row.label}
+                  className="grid gap-1 border-b border-[rgba(15,42,68,0.08)] px-5 py-4 last:border-b-0 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-4 sm:px-6"
+                >
+                  <dt className="text-primary-label">{row.label}</dt>
+                  <dd
+                    className={
+                      row.label === "Public slug"
+                        ? "text-sm font-medium leading-6 text-[color:var(--color-primary)]"
+                        : "text-sm leading-6 text-[color:var(--color-muted-foreground)]"
+                    }
+                  >
+                    {row.label === "Public slug" && row.value !== "Not recorded" ? (
+                      <code className="rounded-[0.45rem] bg-[rgba(15,42,68,0.05)] px-2 py-1 text-[13px] text-[color:var(--color-primary)]">
+                        {row.value}
+                      </code>
+                    ) : (
+                      row.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="border-t border-[rgba(15,42,68,0.08)] bg-[rgba(247,249,251,0.72)] px-5 py-4 sm:px-6">
+              <p className="text-primary-label">Public route</p>
+              {publicPath ? (
+                <>
+                  <a
+                    href={publicPath}
+                    className="mt-2 block break-all text-sm leading-7 text-[color:var(--color-secondary)] transition-colors hover:text-[color:var(--color-primary)]"
+                  >
+                    {publicPath}
+                  </a>
+                  <p className="mt-2 text-xs uppercase tracking-[0.12em] text-[color:var(--color-muted)]">
+                    Active once the record is published
+                  </p>
+                </>
+              ) : (
+                <p className="mt-2 text-sm leading-6 text-[color:var(--color-muted-foreground)]">
+                  A public route will appear once a tenant slug and record slug
+                  are available.
+                </p>
+              )}
+            </div>
+          </section>
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">

@@ -12,3 +12,8 @@ export async function bootstrapTenant(tenantId: string) {
 
   return mapTenantContext(payload);
 }
+
+export async function listSupervisedTenants() {
+  const payload = await requestJson<TenantContextDto[]>("/tenants");
+  return payload.map(mapTenantContext);
+}

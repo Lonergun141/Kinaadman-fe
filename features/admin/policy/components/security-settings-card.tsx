@@ -35,6 +35,18 @@ export function SecuritySettingsCard({
           <option value="true">Yes</option>
           <option value="false">No</option>
         </SelectField>
+        <SelectField
+          label="Remember device"
+          value={booleanValue(policy.allow_remember_device)}
+          onChange={(event) =>
+            onPolicyChange({
+              allow_remember_device: event.target.value === "true",
+            })
+          }
+        >
+          <option value="true">Enabled</option>
+          <option value="false">Disabled</option>
+        </SelectField>
         <TextInput
           label="Max login attempts"
           value={String(policy.max_login_attempts)}

@@ -9,6 +9,7 @@ export interface SessionUser {
   email: string;
   role: string;
   membershipId: string | null;
+  isSuperAdmin: boolean;
 }
 
 export interface TenantBranding {
@@ -42,6 +43,20 @@ export interface TenantContext {
   is_active: boolean;
   branding: TenantBranding | null;
   policy: TenantPolicy | null;
+}
+
+export interface TenantEmailDomain {
+  id: string;
+  domain: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TenantHostAlias {
+  id: string;
+  hostname: string;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface DepartmentOption {
@@ -115,6 +130,29 @@ export interface ThesisMetadataVersion {
   created_at: string;
 }
 
+export interface PublicationReadinessCheck {
+  id: string;
+  label: string;
+  status: string;
+  detail: string;
+  blocking: boolean;
+}
+
+export interface PublicationReadiness {
+  can_publish_now: boolean;
+  readiness_score: number;
+  blocker_count: number;
+  blockers: string[];
+  adviser_recommendation_status: string;
+  adviser_review_decision: string | null;
+  adviser_recommendation_note: string | null;
+  adviser_recommendation_by: string | null;
+  adviser_recommendation_at: string | null;
+  panel_approval_status: string;
+  panel_approval_note: string | null;
+  checklist: PublicationReadinessCheck[];
+}
+
 export interface CitationExport {
   format: string;
   filename: string;
@@ -132,6 +170,46 @@ export interface PublicCollectionSummary {
   departments: CollectionBucket[];
   programs: CollectionBucket[];
   years: CollectionBucket[];
+}
+
+export interface AnalyticsCountBucket {
+  label: string;
+  count: number;
+}
+
+export interface AnalyticsValueBucket {
+  label: string;
+  value: number;
+}
+
+export interface RepositoryAnalyticsMonth {
+  key: string;
+  month: string;
+  created: number;
+  submitted: number;
+  published: number;
+}
+
+export interface RepositoryAnalyticsSummary {
+  total_records: number;
+  published_count: number;
+  active_workflow_count: number;
+  ready_count: number;
+  blocked_count: number;
+}
+
+export interface RepositoryAnalyticsOverview {
+  as_of: string;
+  window_months: number;
+  summary: RepositoryAnalyticsSummary;
+  monthly_activity: RepositoryAnalyticsMonth[];
+  status_data: AnalyticsCountBucket[];
+  department_data: AnalyticsCountBucket[];
+  active_department_data: AnalyticsCountBucket[];
+  visibility_data: AnalyticsValueBucket[];
+  blocker_data: AnalyticsCountBucket[];
+  pipeline_data: AnalyticsCountBucket[];
+  readiness_split: AnalyticsValueBucket[];
 }
 
 export interface ThesisListItem {
@@ -156,6 +234,7 @@ export interface ThesisListItem {
   updated_at: string;
   authors: ThesisAuthor[];
   keywords: Keyword[];
+  publication_readiness: PublicationReadiness;
   department?: DepartmentOption | null;
   program?: ProgramOption | null;
 }
@@ -166,6 +245,8 @@ export interface ThesisDetail extends ThesisListItem {
   advisers: ThesisAdviser[];
   rights_license: string;
   panel_members: string[];
+  panel_approval_status: string;
+  panel_approval_note: string;
   status_history: ThesisStatusHistory[];
   reviews: ThesisReview[];
   files: ThesisFile[];
@@ -208,6 +289,7 @@ export interface TenantMembership {
   role: string;
   status: string;
   created_at: string;
+  updated_at: string;
   user: TenantMembershipUser;
 }
 
@@ -218,6 +300,7 @@ export interface InvitationRecord {
   expires_at: string;
   accepted_at: string | null;
   created_at: string;
+  accept_url?: string | null;
 }
 
 export interface AuditLogEntry {

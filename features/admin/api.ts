@@ -1,7 +1,15 @@
 export {
+  createEmailDomain,
+  createHostAlias,
+  deleteEmailDomain,
+  deleteHostAlias,
+  listEmailDomains,
+  listHostAliases,
+  listInvitations,
   listAuditLog,
   listTenantMemberships,
   sendInvitation,
+  updateTenantMembership,
   updateBranding,
   updatePolicy,
 } from "./api/index";

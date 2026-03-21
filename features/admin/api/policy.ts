@@ -1,8 +1,16 @@
 "use client";
 
 import { requestJson } from "@/lib/api/client";
-import type { TenantPolicyDto } from "@/types/api";
-import type { TenantPolicy } from "@/types/domain";
+import type {
+  TenantEmailDomainDto,
+  TenantHostAliasDto,
+  TenantPolicyDto,
+} from "@/types/api";
+import type {
+  TenantEmailDomain,
+  TenantHostAlias,
+  TenantPolicy,
+} from "@/types/domain";
 
 export async function updatePolicy(payload: {
   tenantId: string;
@@ -27,4 +35,70 @@ export async function updatePolicy(payload: {
   });
 
   return response as TenantPolicy;
+}
+
+export async function listEmailDomains(tenantId: string) {
+  const response = await requestJson<TenantEmailDomainDto[]>("/tenants/email-domains", {
+    tenantId,
+  });
+
+  return response as TenantEmailDomain[];
+}
+
+export async function createEmailDomain(payload: {
+  tenantId: string;
+  domain: string;
+}) {
+  const response = await requestJson<TenantEmailDomainDto>("/tenants/email-domains", {
+    tenantId: payload.tenantId,
+    method: "POST",
+    body: {
+      domain: payload.domain,
+    },
+  });
+
+  return response as TenantEmailDomain;
+}
+
+export async function deleteEmailDomain(payload: {
+  tenantId: string;
+  domainId: string;
+}) {
+  await requestJson(`/tenants/email-domains/${payload.domainId}`, {
+    tenantId: payload.tenantId,
+    method: "DELETE",
+  });
+}
+
+export async function listHostAliases(tenantId: string) {
+  const response = await requestJson<TenantHostAliasDto[]>("/tenants/host-aliases", {
+    tenantId,
+  });
+
+  return response as TenantHostAlias[];
+}
+
+export async function createHostAlias(payload: {
+  tenantId: string;
+  hostname: string;
+}) {
+  const response = await requestJson<TenantHostAliasDto>("/tenants/host-aliases", {
+    tenantId: payload.tenantId,
+    method: "POST",
+    body: {
+      hostname: payload.hostname,
+    },
+  });
+
+  return response as TenantHostAlias;
+}
+
+export async function deleteHostAlias(payload: {
+  tenantId: string;
+  aliasId: string;
+}) {
+  await requestJson(`/tenants/host-aliases/${payload.aliasId}`, {
+    tenantId: payload.tenantId,
+    method: "DELETE",
+  });
 }
