@@ -1,61 +1,53 @@
-# Kinaadman (MVP) — Campus-Only Multi-Tenant Thesis Repository
+# Kinaadman Frontend
 
-Kinaadman is a multi-tenant SaaS platform for universities to **store, manage, and access thesis/capstone research** in a **private (campus-only)** digital repository. Each university is a **tenant** with isolated data, users, and settings.
+Next.js frontend integrated against the existing Django backend in `../Kinaadman-be` without backend code changes.
 
----
+## Frontend Runtime Setup
+- Backend origin is proxied through Next.js rewrites via `KINAADMAN_BACKEND_ORIGIN`.
+- Browser API calls can target the backend directly through `NEXT_PUBLIC_BACKEND_API_BASE`.
+- If `NEXT_PUBLIC_BACKEND_API_BASE` is not set, the browser falls back to `/api/backend/v1/*`.
+- Default tenant bootstrap is prefilled through `NEXT_PUBLIC_DEFAULT_TENANT_ID`.
 
-## What the MVP does
-- **Tenant-based system** (multiple universities on one platform)
-- **Campus-only access**: everything requires login (no public pages)
-- **Research workflow**: Draft → Submitted → Review → Approved → Published (still private)
-- **Thesis metadata + file uploads** (PDF + attachments)
-- **Search + filters** (title, abstract, keywords, year, department, program, authors/advisers)
-- **Roles (RBAC)**: Student, Adviser, Librarian, Tenant Admin, Super Admin
+Current local env:
+- `NEXT_PUBLIC_BACKEND_API_BASE=http://127.0.0.1:8000/v1`
+- `KINAADMAN_BACKEND_ORIGIN=http://127.0.0.1:8000`
+- `NEXT_PUBLIC_DEFAULT_TENANT_ID=3fec168e-2c39-46f3-8734-462d8562d9d7`
 
----
+## Live Backend Features Wired To The UI
+- `POST /v1/auth/login`
+- `POST /v1/auth/refresh`
+- `POST /v1/auth/logout`
+- `GET /v1/tenants/bootstrap`
+- `GET /v1/users/memberships`
+- `POST /v1/users/invites`
+- `POST /v1/users/invites/{raw_token}/accept`
+- `GET|POST /v1/departments/`
+- `GET|POST /v1/programs/`
+- `GET|POST|PUT /v1/theses/`
+- `GET /v1/theses/{id}`
+- `POST /v1/theses/{id}/submit`
+- `POST /v1/theses/{id}/review`
+- `POST /v1/theses/{id}/publish`
+- `POST /v1/theses/{id}/unpublish`
+- `POST /v1/theses/{id}/authors`
+- `POST /v1/theses/{id}/advisers`
+- `PUT /v1/tenants/branding`
+- `PUT /v1/tenants/policy`
+- `GET /v1/core/audit`
 
-## Suggested Tech Stack (fast MVP, scalable later)
-**Frontend**
-- Next.js (TypeScript, App Router)
-- Tailwind + shadcn/ui
+## Database State
+- The connected backend database is not empty.
+- Existing local data was confirmed for tenants, users, memberships, departments, programs, and theses, so no seed step is required before using the frontend.
 
-**Backend**
-- Django + Django Ninja (REST API)
-- Django Admin for backoffice ops
+If you ever need to populate an empty database, use the backend seed command from `Kinaadman-be`:
 
-**Data**
-- PostgreSQL (single DB; tenant scoping via `tenant_id`)
+```powershell
+.\.venv\Scripts\python.exe manage.py populate_mock
+```
 
-**Files**
-- S3-compatible storage (AWS S3 / DigitalOcean Spaces)
-- Pre-signed URLs for secure uploads/downloads
+The seed command creates sample campus accounts such as `admin@uok.edu.ph`, `librarian@uok.edu.ph`, `adviser1@uok.edu.ph`, and `student1@uok.edu.ph`, with password `password123` when those users are created by the command.
 
-**Caching/Jobs (optional MVP, recommended later)**
-- Redis (sessions/cache)
-- Celery (PDF thumbnails, extraction, async tasks)
-
----
-
-## Tenancy & Access (MVP rules)
-- Tenant resolved via **subdomain**: `{tenant}.kinaadman.com`
-- Every tenant-owned record includes `tenant_id`
-- **Campus-only** enforced by:
-  - Invite-only accounts + allowed email domains (MVP), then
-  - Optional upgrade to tenant SSO (OIDC/SAML)
-
----
-
-## High-level Modules
-- **Auth & Users**: login, roles, invitations, tenant membership
-- **Thesis Records**: metadata, status workflow, approvals
-- **Files**: upload/download with permission checks
-- **Repository Search**: Postgres full-text search (upgrade later if needed)
-- **Admin Tools**: user management, review queue, tenant settings
-
----
-
-## Scaling Path (no rewrite)
-- Stronger isolation: Postgres RLS or schema-per-tenant
-- Better search: OpenSearch/Elasticsearch
-- Enterprise access: SSO + optional IP allowlisting
-- Performance: Redis caching + CDN for files
+## Notes
+- Repository search and status filtering are live.
+- Department and program filtering are applied client-side after fetching the tenant catalogue.
+- The backend does not expose thesis ownership in list responses, invite listing, or review history feeds, so the frontend surfaces those gaps honestly instead of fabricating data.
